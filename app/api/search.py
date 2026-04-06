@@ -85,7 +85,7 @@ async def create_search(
         expires_at=datetime.now(timezone.utc) + timedelta(seconds=settings.search_ttl_seconds),
     )
     db.add(session)
-    await db.flush()
+    await db.commit()  # Commit now so callbacks can find this session
 
     # Build Beckn search intent
     intent: dict[str, Any] = {}

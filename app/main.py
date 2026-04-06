@@ -25,7 +25,7 @@ from app.database import engine
 from app.models.base import Base
 
 # Ensure the beckn-protocol library is importable
-_project_root = Path(__file__).resolve().parent.parent.parent.parent
+_project_root = Path(__file__).resolve().parent.parent
 _beckn_lib = _project_root / "packages" / "beckn-protocol"
 if str(_beckn_lib) not in sys.path:
     sys.path.insert(0, str(_beckn_lib))
@@ -81,9 +81,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Starting BAP service: %s at %s", settings.subscriber_id, settings.subscriber_url)
 
     # Create database tables (for development; use Alembic in production)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    logger.info("Database tables ensured")
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database tables ensured")
+    except Exception:
+        logger.warning("Could not connect to database (skipping table creation)", exc_info=True)
 
     # Register with the Beckn registry
     await _register_with_registry()
@@ -91,7 +94,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     yield
 
     # --- Shutdown ---
-    await engine.dispose()
+    try:
+        await engine.dispose()
+    except Exception:
+        pass
     logger.info("BAP service shut down")
 
 

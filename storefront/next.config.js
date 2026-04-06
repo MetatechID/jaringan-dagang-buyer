@@ -13,10 +13,11 @@ const nextConfig = {
     ],
   },
   async rewrites() {
+    const bapUrl = process.env.NEXT_PUBLIC_BAP_API_URL || "http://localhost:8002";
     return [
       {
         source: "/bap/:path*",
-        destination: "http://localhost:8002/:path*",
+        destination: `${bapUrl}/:path*`,
       },
     ];
   },
