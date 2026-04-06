@@ -151,3 +151,14 @@ app.include_router(orders_router)
 async def health() -> dict[str, str]:
     """Health check endpoint."""
     return {"status": "ok", "service": "bap-service"}
+
+
+@app.get("/debug/config")
+async def debug_config():
+    """Debug: show current config values."""
+    return {
+        "gateway_url": settings.gateway_url,
+        "registry_url": settings.registry_url,
+        "subscriber_url": settings.subscriber_url,
+        "database_url": settings.database_url[:50] + "...",
+    }

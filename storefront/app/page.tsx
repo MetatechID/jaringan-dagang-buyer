@@ -33,7 +33,7 @@ export default function HomePage() {
       const { session_id } = await initiateSearch("");
 
       let attempts = 0;
-      const maxAttempts = 10;
+      const maxAttempts = 20;
 
       const poll = async (): Promise<Product[]> => {
         const data = await pollSearchResults(session_id);
@@ -49,7 +49,7 @@ export default function HomePage() {
         }
 
         attempts++;
-        await new Promise((r) => setTimeout(r, 1500));
+        await new Promise((r) => setTimeout(r, 2000));
         return poll();
       };
 

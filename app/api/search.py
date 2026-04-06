@@ -113,9 +113,9 @@ async def create_search(
             city_code=body.city,
         )
         ack_status = ack.ack_status
-    except Exception:
+    except Exception as exc:
         logger.exception("Failed to send search to Gateway")
-        ack_status = "SEND_FAILED"
+        ack_status = f"SEND_FAILED({type(exc).__name__}: {exc})"
     finally:
         await sender.close()
 

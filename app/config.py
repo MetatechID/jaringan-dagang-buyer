@@ -46,7 +46,7 @@ class Settings(BaseSettings):
 
     # --- Timeouts ---
     search_ttl_seconds: int = 30
-    request_timeout_seconds: int = 10
+    request_timeout_seconds: int = 25
 
 
 settings = Settings()
