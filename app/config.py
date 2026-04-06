@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     debug: bool = True
 
     # --- Timeouts ---
-    search_ttl_seconds: int = 30
+    search_ttl_seconds: int = 60
     request_timeout_seconds: int = 25
 
 

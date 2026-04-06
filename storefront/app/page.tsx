@@ -21,14 +21,35 @@ const CATEGORIES = [
 export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mobileQuery, setMobileQuery] = useState("");
   const router = useRouter();
 
   const loadProducts = useCallback(async () => {
-    setLoading(true);
+    // 1. Immediately show cached products if available
+    let hasCached = false;
+    try {
+      const cached = localStorage.getItem("jd_last_products");
+      if (cached) {
+        const cachedProducts: Product[] = JSON.parse(cached);
+        if (cachedProducts.length > 0) {
+          setProducts(cachedProducts);
+          setLoading(false);
+          setUpdating(true);
+          hasCached = true;
+        }
+      }
+    } catch {
+      // ignore parse errors
+    }
+
+    if (!hasCached) {
+      setLoading(true);
+    }
     setError(null);
 
+    // 2. Run real-time Beckn search in the background
     try {
       const { session_id } = await initiateSearch("");
 
@@ -63,9 +84,13 @@ export default function HomePage() {
       }
     } catch (err) {
       console.error("Failed to load products:", err);
-      setError("Gagal memuat produk. Pastikan layanan BAP berjalan.");
+      // Only show error if we have no cached data to fall back on
+      if (!hasCached) {
+        setError("Gagal memuat produk. Pastikan layanan BAP berjalan.");
+      }
     } finally {
       setLoading(false);
+      setUpdating(false);
     }
   }, []);
 
@@ -153,14 +178,22 @@ export default function HomePage() {
           <h2 className="text-sm font-bold text-gray-900 md:text-lg">
             Produk dari Jaringan
           </h2>
-          {!loading && products.length > 0 && (
-            <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700 md:text-xs md:px-3 md:py-1">
-              {products.length} produk
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {updating && (
+              <span className="flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-medium text-amber-700 md:text-xs md:px-3 md:py-1">
+                <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
+                Memperbarui...
+              </span>
+            )}
+            {!loading && products.length > 0 && (
+              <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700 md:text-xs md:px-3 md:py-1">
+                {products.length} produk
+              </span>
+            )}
+          </div>
         </div>
 
-        {error ? (
+        {error && !products.length ? (
           <div className="rounded-xl border border-red-100 bg-red-50 p-6 text-center">
             <p className="text-sm text-red-600">{error}</p>
             <button
