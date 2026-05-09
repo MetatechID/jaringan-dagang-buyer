@@ -21,17 +21,18 @@ from typing import AsyncGenerator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# Make the shared beckn-protocol package importable (kept for parity with JD BAP;
-# unused in v1 but the import path matters for future Beckn handlers).
-_repo_root = Path(__file__).resolve().parent.parent.parent
-_beckn_lib = _repo_root / "packages" / "beckn-protocol"
-if str(_beckn_lib) not in sys.path:
-    sys.path.insert(0, str(_beckn_lib))
-
 # Make this app's own modules importable as top-level (config, database, etc.)
 _app_dir = Path(__file__).resolve().parent
 if str(_app_dir) not in sys.path:
     sys.path.insert(0, str(_app_dir))
+
+# Optional: add the shared beckn-protocol package if present (only when running
+# from a checkout that includes /packages/beckn-protocol; not deployed on Vercel
+# because rootDirectory is `apps/beli-aman-bap` and beckn-protocol lives outside).
+_repo_root_candidate = Path(__file__).resolve().parent.parent.parent
+_beckn_lib_candidate = _repo_root_candidate / "packages" / "beckn-protocol"
+if _beckn_lib_candidate.exists() and str(_beckn_lib_candidate) not in sys.path:
+    sys.path.insert(0, str(_beckn_lib_candidate))
 
 from config import settings  # noqa: E402
 from database import engine  # noqa: E402
