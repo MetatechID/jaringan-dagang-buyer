@@ -36,7 +36,10 @@ export function StepSignIn() {
         // Page is navigating away; nothing to do.
         return;
       }
-      setErr(t.error.signInFailed);
+      // Show the real Firebase error so debugging is possible in production.
+      const code = e?.code ? `[${e.code}] ` : "";
+      const msg = e?.message || String(e);
+      setErr(`${t.error.signInFailed} ${code}${msg}`);
       setBusy(false);
     }
   };
