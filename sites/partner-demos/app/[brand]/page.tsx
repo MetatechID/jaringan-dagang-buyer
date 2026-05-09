@@ -15,32 +15,7 @@ export default function BrandHomePage({ params }: { params: { brand: string } })
     <div>
       {/* Hero */}
       {isAntarestar ? (
-        <>
-          <AntarestarHero />
-          {/* Secondary promo banners */}
-          <section style={{ padding: "16px 24px 0" }}>
-            <div
-              style={{
-                maxWidth: 1400,
-                margin: "0 auto",
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 16,
-              }}
-            >
-              <img
-                src="https://antarestar.com/wp-content/uploads/2024/06/BANNER-CUSTOM-YOUR-PRODUCT.png"
-                alt="Custom your product"
-                style={{ width: "100%", height: "auto", borderRadius: 4, display: "block" }}
-              />
-              <img
-                src="https://antarestar.com/wp-content/uploads/2024/06/BANNER-PERHATIAN-UNBOXING-1_11zon.jpg"
-                alt="Perhatian unboxing"
-                style={{ width: "100%", height: "auto", borderRadius: 4, display: "block" }}
-              />
-            </div>
-          </section>
-        </>
+        <AntarestarHero />
       ) : (
         <section
           style={{
@@ -97,21 +72,30 @@ export default function BrandHomePage({ params }: { params: { brand: string } })
       )}
 
       {/* Featured products */}
-      <section style={{ padding: "48px 24px" }}>
+      <section style={{ padding: isAntarestar ? "40px 24px 64px" : "48px 24px" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 24 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+              marginBottom: isAntarestar ? 28 : 24,
+              paddingBottom: isAntarestar ? 14 : 0,
+              borderBottom: isAntarestar ? "1px solid #EEE" : "none",
+            }}
+          >
             <h2
               style={{
                 fontFamily: brand.fonts.heading,
-                fontSize: isAntarestar ? 20 : 22,
-                fontWeight: isAntarestar ? 400 : 700,
+                fontSize: isAntarestar ? 18 : 22,
+                fontWeight: isAntarestar ? 500 : 700,
                 textTransform: isAntarestar ? "uppercase" : "none",
-                letterSpacing: isAntarestar ? "0.05em" : "normal",
-                color: isAntarestar ? "#555" : "inherit",
+                letterSpacing: isAntarestar ? "0.16em" : "normal",
+                color: isAntarestar ? "#1F2937" : "inherit",
                 margin: 0,
               }}
             >
-              {isAntarestar ? "Featured Categories" : "Produk Unggulan"}
+              {isAntarestar ? "Shop All" : "Produk Unggulan"}
             </h2>
             <span style={{ fontSize: 12, color: "var(--c-text-muted)" }}>
               {brand.sampleProducts?.length ?? 0} produk
@@ -120,8 +104,10 @@ export default function BrandHomePage({ params }: { params: { brand: string } })
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-              gap: 20,
+              gridTemplateColumns: isAntarestar
+                ? "repeat(auto-fill, minmax(280px, 1fr))"
+                : "repeat(auto-fill, minmax(240px, 1fr))",
+              gap: isAntarestar ? 28 : 20,
             }}
           >
             {(brand.sampleProducts || []).map((p) => (

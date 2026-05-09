@@ -1,69 +1,48 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
-const SLIDES = [
-  "https://antarestar.com/wp-content/uploads/2025/11/BANNER-SLIDE-1.png",
-  "https://antarestar.com/wp-content/uploads/2025/11/BANNER-SLIDE-2.png",
-  "https://antarestar.com/wp-content/uploads/2025/11/BANNER-SLIDE-3.png",
-];
-
 export function AntarestarHero() {
-  const [i, setI] = useState(0);
-
-  useEffect(() => {
-    const t = setInterval(() => setI((p) => (p + 1) % SLIDES.length), 5000);
-    return () => clearInterval(t);
-  }, []);
-
   return (
-    <section style={{ background: "#fff" }}>
-      <div style={{ position: "relative", width: "100%", aspectRatio: "1091 / 800", maxHeight: 560, overflow: "hidden" }}>
-        {SLIDES.map((src, idx) => (
-          <img
-            key={src}
-            src={src}
-            alt=""
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              opacity: idx === i ? 1 : 0,
-              transition: "opacity 700ms ease",
-            }}
-          />
-        ))}
-        <div
+    <section
+      style={{
+        background: "#fff",
+        borderBottom: "1px solid #EEE",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+          padding: "40px 24px 32px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 14,
+          textAlign: "center",
+        }}
+      >
+        <span
           style={{
-            position: "absolute",
-            bottom: 16,
-            left: "50%",
-            transform: "translateX(-50%)",
-            display: "flex",
-            gap: 8,
+            fontFamily: "Montserrat, system-ui, sans-serif",
+            fontSize: 11,
+            fontWeight: 500,
+            letterSpacing: "0.22em",
+            color: "#777",
+            textTransform: "uppercase",
           }}
         >
-          {SLIDES.map((_, idx) => (
-            <button
-              key={idx}
-              aria-label={`Go to slide ${idx + 1}`}
-              onClick={() => setI(idx)}
-              style={{
-                width: 10,
-                height: 10,
-                borderRadius: "50%",
-                border: "none",
-                cursor: "pointer",
-                background: idx === i ? "#404040" : "rgba(64,64,64,0.35)",
-              }}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "20px 24px 0", display: "inline-flex" }}>
+          Outdoor + Utility
+        </span>
+        <h1
+          style={{
+            fontFamily: "Montserrat, system-ui, sans-serif",
+            fontSize: "clamp(28px, 4vw, 40px)",
+            fontWeight: 400,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "#1F2937",
+            margin: 0,
+          }}
+        >
+          Let&rsquo;s Go Out!
+        </h1>
         <span
           style={{
             display: "inline-flex",
