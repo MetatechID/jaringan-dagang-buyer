@@ -32,12 +32,21 @@ const STATES_ORDER = [
   "ESCROW_RELEASED",
 ];
 
-function getIdToken(): Promise<string | null> {
-  if (typeof window === "undefined") return Promise.resolve(null);
-  // Read the active Firebase user from the SDK's app instance.
-  const w = window as any;
-  const auth = w.__beli_aman_auth;
-  return auth?.currentUser?.getIdToken?.() ?? Promise.resolve(null);
+async function getIdToken(): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  // Use Firebase web SDK directly with the same app name the SDK uses.
+  try {
+    const [{ getApps }, { getAuth }] = await Promise.all([
+      import("firebase/app"),
+      import("firebase/auth"),
+    ]);
+    const app = getApps().find((a) => a.name === "beli-aman-sdk") || getApps()[0];
+    if (!app) return null;
+    const auth = getAuth(app);
+    return auth.currentUser ? await auth.currentUser.getIdToken() : null;
+  } catch {
+    return null;
+  }
 }
 
 export default function OrderTrackerPage() {
