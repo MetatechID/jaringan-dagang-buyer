@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { useBeliAman } from "@jaringan-dagang/beli-aman-sdk";
 
 import { formatIDR } from "@/lib/format";
 
@@ -32,25 +33,10 @@ const STATES_ORDER = [
   "ESCROW_RELEASED",
 ];
 
-async function getIdToken(): Promise<string | null> {
-  if (typeof window === "undefined") return null;
-  // Use Firebase web SDK directly with the same app name the SDK uses.
-  try {
-    const [{ getApps }, { getAuth }] = await Promise.all([
-      import("firebase/app"),
-      import("firebase/auth"),
-    ]);
-    const app = getApps().find((a) => a.name === "beli-aman-sdk") || getApps()[0];
-    if (!app) return null;
-    const auth = getAuth(app);
-    return auth.currentUser ? await auth.currentUser.getIdToken() : null;
-  } catch {
-    return null;
-  }
-}
 
 export default function OrderTrackerPage() {
   const params = useParams<{ id: string }>();
+  const { apiOpts, signedIn } = useBeliAman();
   const [order, setOrder] = useState<OrderResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
@@ -61,12 +47,18 @@ export default function OrderTrackerPage() {
   }, []);
 
   useEffect(() => {
+    // Wait for Firebase auth to hydrate before fetching — without this the
+    // first call lands while currentUser is still null and gets a 401.
+    if (!signedIn) {
+      setError(null);
+      return;
+    }
     let cancelled = false;
     const load = async () => {
       try {
-        const token = await getIdToken();
+        const token = await apiOpts.getIdToken();
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BAP_URL}/api/v1/orders/${params.id}`,
+          `${apiOpts.bapUrl.replace(/\/$/, "")}/api/v1/orders/${params.id}`,
           { headers: token ? { Authorization: `Bearer ${token}` } : {} },
         );
         if (!res.ok) {
@@ -74,7 +66,10 @@ export default function OrderTrackerPage() {
           return;
         }
         const json = (await res.json()) as OrderResponse;
-        if (!cancelled) setOrder(json);
+        if (!cancelled) {
+          setOrder(json);
+          setError(null);
+        }
       } catch (e: any) {
         if (!cancelled) setError(e?.message || "Network error");
       }
@@ -85,7 +80,19 @@ export default function OrderTrackerPage() {
       cancelled = true;
       clearInterval(id);
     };
-  }, [params.id]);
+  }, [params.id, signedIn, apiOpts]);
+
+  if (!signedIn) {
+    return (
+      <div style={{ minHeight: "100vh", padding: 48, textAlign: "center", color: "#64748B" }}>
+        <h2 style={{ fontSize: 18, fontWeight: 600, color: "#0F172A" }}>Masuk untuk Melihat Pesanan</h2>
+        <p style={{ marginTop: 8 }}>Anda perlu masuk dengan Google untuk melihat pesanan ini.</p>
+        <Link href="/" style={{ color: "#0F766E", marginTop: 16, display: "inline-block" }}>
+          ← Kembali ke pemilihan demo
+        </Link>
+      </div>
+    );
+  }
 
   if (error) {
     return (
