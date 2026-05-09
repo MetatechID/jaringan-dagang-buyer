@@ -17,6 +17,7 @@ from database import get_db
 from deps import require_admin_token
 from models.order import Order, OrderState
 from services import escrow as escrow_service
+from services.release_clock import compute_auto_release_at
 from services.state_machine import StateTransitionError, lock_order_for_update, transition
 
 router = APIRouter(prefix="/api/v1/internal-mock", tags=["internal-mock"])
@@ -66,7 +67,8 @@ async def mock_delivered(order_id: str, db: AsyncSession = Depends(get_db)) -> d
         raise HTTPException(409, str(e))
     now = datetime.now(timezone.utc)
     order.delivered_simulated_at = now
-    order.auto_release_at = now + timedelta(days=settings.auto_release_days)
+    # Pin to Asia/Jakarta calendar day (spec §11) — not UTC + 72h.
+    order.auto_release_at = compute_auto_release_at(now, settings.auto_release_days)
     return {
         "id": order.id,
         "state": order.state.value,

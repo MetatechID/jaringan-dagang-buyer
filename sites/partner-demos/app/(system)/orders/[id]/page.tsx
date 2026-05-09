@@ -181,10 +181,15 @@ export default function OrderTrackerPage() {
                 color: "#854D0E",
               }}
             >
-              ⏰ Auto-release in {fmtCountdown(countdown)}
+              ⏰ Auto-release in {fmtCountdown(countdown)} (Asia/Jakarta)
             </div>
           ) : null}
         </section>
+
+        {/* Buyer actions — confirm-receipt + dispute */}
+        {(order.state === "FULFILLING" || order.state === "RECEIVED") ? (
+          <BuyerActions order={order} apiOpts={apiOpts} onUpdated={(o) => setOrder(o)} />
+        ) : null}
 
         {/* Items */}
         <section style={card()}>
@@ -304,4 +309,217 @@ function fmtCountdown(secs: number): string {
   const s = secs % 60;
   if (d > 0) return `${d}d ${h}h ${m}m`;
   return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+}
+
+/* -------------------------------------------------------------------------
+ * Buyer actions: confirm-receipt + open-dispute. Visible while order is in
+ * FULFILLING or RECEIVED. These are the §5 unhappy/happy-path entry points
+ * the spec calls out (Step 5 confirm + 5a/5b dispute).
+ * ------------------------------------------------------------------------- */
+
+const DISPUTE_REASONS: { value: string; label: string }[] = [
+  { value: "not_received", label: "Belum diterima" },
+  { value: "wrong_item", label: "Barang salah" },
+  { value: "damaged", label: "Barang rusak / cacat" },
+  { value: "other", label: "Lainnya" },
+];
+
+function BuyerActions({
+  order,
+  apiOpts,
+  onUpdated,
+}: {
+  order: OrderResponse;
+  apiOpts: { bapUrl: string; getIdToken: () => Promise<string | null> };
+  onUpdated: (o: OrderResponse) => void;
+}) {
+  const [confirmBusy, setConfirmBusy] = useState(false);
+  const [disputeOpen, setDisputeOpen] = useState(false);
+  const [reason, setReason] = useState<string>("not_received");
+  const [note, setNote] = useState("");
+  const [disputeBusy, setDisputeBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const callApi = async (path: string, body?: any) => {
+    const token = await apiOpts.getIdToken();
+    const res = await fetch(`${apiOpts.bapUrl.replace(/\/$/, "")}${path}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: body ? JSON.stringify(body) : "{}",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  };
+
+  const handleConfirmReceipt = async () => {
+    if (!confirm("Konfirmasi: barang sudah diterima dan semua sesuai? Dana akan langsung dilepas ke penjual.")) return;
+    setConfirmBusy(true);
+    setMsg(null);
+    try {
+      await callApi(`/api/v1/orders/${order.id}/confirm-receipt`);
+      // Refetch the order
+      const token = await apiOpts.getIdToken();
+      const res = await fetch(`${apiOpts.bapUrl.replace(/\/$/, "")}/api/v1/orders/${order.id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) onUpdated(await res.json());
+      setMsg("✓ Terima kasih! Dana sudah dilepas ke penjual.");
+    } catch (e: any) {
+      setMsg("Gagal: " + (e?.message || "tidak diketahui"));
+    } finally {
+      setConfirmBusy(false);
+    }
+  };
+
+  const handleSubmitDispute = async () => {
+    setDisputeBusy(true);
+    setMsg(null);
+    try {
+      await callApi(`/api/v1/disputes`, { order_id: order.id, reason, note });
+      const token = await apiOpts.getIdToken();
+      const res = await fetch(`${apiOpts.bapUrl.replace(/\/$/, "")}/api/v1/orders/${order.id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) onUpdated(await res.json());
+      setMsg("✓ Laporan diterima. Tim Beli Aman akan memproses dalam 48 jam.");
+      setDisputeOpen(false);
+      setNote("");
+    } catch (e: any) {
+      setMsg("Gagal: " + (e?.message || "tidak diketahui"));
+    } finally {
+      setDisputeBusy(false);
+    }
+  };
+
+  return (
+    <section style={card()}>
+      <h3 style={sectionTitle()}>Tindakan</h3>
+
+      {msg ? (
+        <div
+          style={{
+            marginBottom: 12,
+            padding: 10,
+            background: msg.startsWith("✓") ? "#DCFCE7" : "#FEE2E2",
+            color: msg.startsWith("✓") ? "#166534" : "#991B1B",
+            borderRadius: 8,
+            fontSize: 13,
+          }}
+        >
+          {msg}
+        </div>
+      ) : null}
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <button
+          type="button"
+          onClick={handleConfirmReceipt}
+          disabled={confirmBusy}
+          style={{
+            padding: "12px 18px",
+            background: "linear-gradient(180deg, #10B981, #0F766E)",
+            color: "#fff",
+            border: 0,
+            borderRadius: 10,
+            fontWeight: 700,
+            fontSize: 14,
+            cursor: confirmBusy ? "wait" : "pointer",
+          }}
+        >
+          {confirmBusy ? "Memproses..." : "✓ Sudah diterima, semua oke"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setDisputeOpen((v) => !v)}
+          style={{
+            padding: "10px 14px",
+            background: "transparent",
+            color: "#991B1B",
+            border: "1px solid rgba(153, 27, 27, 0.3)",
+            borderRadius: 10,
+            fontWeight: 600,
+            fontSize: 13,
+            cursor: "pointer",
+          }}
+        >
+          {disputeOpen ? "Tutup" : "⚠️ Lapor masalah"}
+        </button>
+
+        {disputeOpen ? (
+          <div
+            style={{
+              marginTop: 4,
+              padding: 14,
+              background: "#FEF2F2",
+              border: "1px solid #FECACA",
+              borderRadius: 10,
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+            }}
+          >
+            <label style={{ fontSize: 12, color: "#991B1B", fontWeight: 600 }}>
+              Apa masalahnya?
+            </label>
+            <select
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              style={{
+                padding: "8px 10px",
+                borderRadius: 8,
+                border: "1px solid #FCA5A5",
+                background: "#fff",
+                fontSize: 14,
+              }}
+            >
+              {DISPUTE_REASONS.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Detail (opsional). Contoh: kurir bilang sudah diantar tapi tidak ada barang."
+              rows={3}
+              style={{
+                padding: "8px 10px",
+                borderRadius: 8,
+                border: "1px solid #FCA5A5",
+                background: "#fff",
+                fontSize: 13,
+                fontFamily: "inherit",
+                resize: "vertical",
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleSubmitDispute}
+              disabled={disputeBusy}
+              style={{
+                padding: "10px 14px",
+                background: "#DC2626",
+                color: "#fff",
+                border: 0,
+                borderRadius: 8,
+                fontWeight: 700,
+                fontSize: 13,
+                cursor: disputeBusy ? "wait" : "pointer",
+              }}
+            >
+              {disputeBusy ? "Mengirim..." : "Kirim laporan"}
+            </button>
+            <p style={{ fontSize: 11, color: "#7F1D1D", margin: 0 }}>
+              Dana Anda tetap aman di escrow Beli Aman selama laporan diproses (SLA 48 jam).
+            </p>
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
 }
