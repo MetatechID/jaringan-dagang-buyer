@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Brand CSS variables — set per-brand by the SDK's applyBrandTheme(). The
+   defaults below match the Beli Aman house style; brand-specific values
+   override them at runtime when entering a /[brand] route. */
+:root {
+  --c-primary: #0F766E;
+  --c-primary-fg: #FFFFFF;
+  --c-secondary: #134E4A;
+  --c-accent: #10B981;
+  --c-bg: #FFFFFF;
+  --c-surface: #F8FAFC;
+  --c-text: #0F172A;
+  --c-text-muted: #64748B;
+  --r-sm: 6px;
+  --r-md: 12px;
+  --r-lg: 20px;
+  --font-heading: "Inter", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+}
+
+/* Bridge SDK-applied vars (with --ba- prefix) to the storefront vars Tailwind reads. */
+:root {
+  --c-primary: var(--ba-c-primary, var(--c-primary));
+  --c-primary-fg: var(--ba-c-primary-fg, var(--c-primary-fg));
+  --c-secondary: var(--ba-c-secondary, var(--c-secondary));
+  --c-accent: var(--ba-c-accent, var(--c-accent));
+  --c-bg: var(--ba-c-bg, var(--c-bg));
+  --c-surface: var(--ba-c-surface, var(--c-surface));
+  --c-text: var(--ba-c-text, var(--c-text));
+  --c-text-muted: var(--ba-c-text-muted, var(--c-text-muted));
+  --r-sm: var(--ba-r-sm, var(--r-sm));
+  --r-md: var(--ba-r-md, var(--r-md));
+  --r-lg: var(--ba-r-lg, var(--r-lg));
+  --font-heading: var(--ba-font-heading, var(--font-heading));
+  --font-body: var(--ba-font-body, var(--font-body));
+}
+
+html, body { background: var(--c-bg); color: var(--c-text); font-family: var(--font-body); }
+h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }
+* { box-sizing: border-box; }
+
+/* Demo footer (always present) */
+.demo-footer { font-size: 11px; color: var(--c-text-muted); padding: 24px; text-align: center; border-top: 1px dashed rgba(15, 23, 42, 0.12); }

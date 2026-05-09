@@ -1,0 +1,18 @@
+{
+  "name": "jaringan-dagang-buyer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Buyer-side platform for Jaringan Dagang — JD BAP, Beli Aman BAP, partner demo storefronts, and the Beli Aman SDK.",
+  "workspaces": [
+    "packages/beli-aman-sdk",
+    "sites/partner-demos"
+  ],
+  "scripts": {
+    "demos:dev": "npm --workspace sites/partner-demos run dev",
+    "demos:build": "npm --workspace sites/partner-demos run build",
+    "sdk:typecheck": "npm --workspace packages/beli-aman-sdk run typecheck"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  }
+}

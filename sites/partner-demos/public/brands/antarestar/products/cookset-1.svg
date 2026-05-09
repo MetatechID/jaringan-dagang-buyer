@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
+  <rect width="800" height="800" fill="#1f1f1f"/>
+  <g transform="translate(400,400)" stroke="#FF6B00" stroke-width="3" fill="#0d0d0d">
+    <ellipse cx="0" cy="60" rx="160" ry="40" fill="#1a1a1a"/>
+    <path d="M-160,60 L-160,-100 L160,-100 L160,60" fill="#0d0d0d"/>
+    <ellipse cx="0" cy="-100" rx="160" ry="30" fill="#1a1a1a"/>
+    <line x1="-160" y1="-30" x2="-200" y2="-30" stroke="#FF6B00" stroke-width="4"/>
+    <line x1="160" y1="-30" x2="200" y2="-30" stroke="#FF6B00" stroke-width="4"/>
+    <ellipse cx="0" cy="-110" rx="100" ry="14" fill="none" stroke="#FF6B00" stroke-width="2"/>
+  </g>
+  <text x="400" y="720" font-family="Archivo, sans-serif" font-size="28" font-weight="800" fill="#fff" text-anchor="middle" letter-spacing="0.1em">CAMPING COOK SET 2P</text>
+</svg>

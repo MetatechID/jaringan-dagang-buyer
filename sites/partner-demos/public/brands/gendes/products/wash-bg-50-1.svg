@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFE4F0"/>
+      <stop offset="100%" stop-color="#FFB6D9"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#g)"/>
+  <g transform="translate(400,400)">
+    <rect x="-90" y="-200" width="180" height="80" rx="20" fill="#FF69B4" stroke="#fff" stroke-width="3"/>
+    <rect x="-110" y="-140" width="220" height="320" rx="40" fill="#fff" stroke="#FF69B4" stroke-width="3"/>
+    <text x="0" y="-30" font-family="Poppins, sans-serif" font-size="48" font-weight="700" fill="#FF69B4" text-anchor="middle">Gendes</text>
+    <text x="0" y="20" font-family="Poppins, sans-serif" font-size="22" font-weight="600" fill="#FF69B4" text-anchor="middle">Sweet</text>
+    <text x="0" y="55" font-family="Poppins, sans-serif" font-size="20" font-weight="500" fill="#E91E63" text-anchor="middle">Bubble Gum</text>
+    <ellipse cx="0" cy="120" rx="60" ry="14" fill="#FFB6D9" stroke="#FF69B4" stroke-width="2"/>
+    <text x="0" y="160" font-family="Inter, sans-serif" font-size="14" fill="#FF69B4" text-anchor="middle">50ml</text>
+  </g>
+</svg>

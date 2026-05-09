@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
+  <rect width="800" height="800" fill="#FFF5FA"/>
+  <g transform="translate(400,400)">
+    <text x="0" y="-200" font-family="Poppins, sans-serif" font-size="36" font-weight="700" fill="#FF69B4" text-anchor="middle">5 Bioactives</text>
+    <g font-family="Inter, sans-serif" font-size="18" fill="#2D1B27" text-anchor="middle">
+      <text x="0" y="-100">🌿 Manjakani</text>
+      <text x="0" y="-60">🌿 Daun Bidara</text>
+      <text x="0" y="-20">🌿 Piper Betle</text>
+      <text x="0" y="20">✨ Niacinamide</text>
+      <text x="0" y="60">💧 Vitamin B5</text>
+    </g>
+    <g transform="translate(0,140)">
+      <rect x="-130" y="-20" width="260" height="50" rx="25" fill="#FF69B4"/>
+      <text x="0" y="12" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="#fff" text-anchor="middle">BPOM · Halal · Dermatology Tested</text>
+    </g>
+  </g>
+</svg>

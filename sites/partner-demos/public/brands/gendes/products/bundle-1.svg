@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
+  <rect width="800" height="800" fill="#FFF5FA"/>
+  <g transform="translate(280,440)">
+    <rect x="-60" y="-100" width="120" height="220" rx="20" fill="#fff" stroke="#FF69B4" stroke-width="3"/>
+    <text x="0" y="40" font-family="Poppins, sans-serif" font-size="20" font-weight="700" fill="#FF69B4" text-anchor="middle">Wash</text>
+  </g>
+  <g transform="translate(440,440)">
+    <rect x="-50" y="-120" width="100" height="240" rx="16" fill="#fff" stroke="#FF8C69" stroke-width="3"/>
+    <text x="0" y="20" font-family="Poppins, sans-serif" font-size="18" font-weight="700" fill="#FF8C69" text-anchor="middle">Spray</text>
+  </g>
+  <g transform="translate(580,440)">
+    <rect x="-60" y="-50" width="120" height="180" rx="14" fill="#FFB6D9" stroke="#FF69B4" stroke-width="3"/>
+    <text x="0" y="40" font-family="Poppins, sans-serif" font-size="16" font-weight="700" fill="#fff" text-anchor="middle">Pouch</text>
+  </g>
+  <text x="400" y="180" font-family="Poppins, sans-serif" font-size="44" font-weight="700" fill="#FF69B4" text-anchor="middle">Starter Bundle</text>
+  <text x="400" y="220" font-family="Inter, sans-serif" font-size="16" fill="#7A6470" text-anchor="middle">All-in-one set</text>
+</svg>

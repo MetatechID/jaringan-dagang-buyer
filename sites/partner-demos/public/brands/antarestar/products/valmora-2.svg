@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
+  <rect width="800" height="800" fill="#1f1f1f"/>
+  <g transform="translate(400,400)">
+    <rect x="-200" y="-220" width="400" height="440" fill="#0d0d0d" stroke="#FF6B00" stroke-width="2"/>
+    <text x="0" y="-50" font-family="Archivo, sans-serif" font-size="80" font-weight="900" fill="#FF6B00" text-anchor="middle">DETAIL</text>
+    <text x="0" y="20" font-family="Inter, sans-serif" font-size="20" fill="#fff" text-anchor="middle">Crinkle finish</text>
+    <text x="0" y="60" font-family="Inter, sans-serif" font-size="16" fill="#888" text-anchor="middle">Wind + water resistant</text>
+    <line x1="-100" y1="120" x2="100" y2="120" stroke="#FF6B00" stroke-width="2"/>
+  </g>
+</svg>
