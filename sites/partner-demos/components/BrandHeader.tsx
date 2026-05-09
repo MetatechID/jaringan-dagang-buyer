@@ -3,8 +3,92 @@
 import Link from "next/link";
 import { useBeliAman } from "@jaringan-dagang/beli-aman-sdk";
 
+const ANTARESTAR_NAV = ["Apparel", "Bags", "Camping", "Footwear", "Jacket", "Sport"];
+
 export function BrandHeader() {
   const { brandTheme } = useBeliAman();
+  const isAntarestar = brandTheme.slug === "antarestar";
+
+  if (isAntarestar) {
+    return (
+      <header
+        style={{
+          background: "#1F2937",
+          color: "#fff",
+          position: "sticky",
+          top: 0,
+          zIndex: 50,
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1400,
+            margin: "0 auto",
+            display: "grid",
+            gridTemplateColumns: "auto 1fr auto",
+            alignItems: "center",
+            gap: 24,
+            padding: "10px 24px",
+          }}
+        >
+          <Link
+            href={`/${brandTheme.slug}`}
+            style={{
+              fontFamily: brandTheme.fonts.heading,
+              fontWeight: 600,
+              color: "#fff",
+              textDecoration: "none",
+              fontSize: 18,
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
+            }}
+          >
+            ▲ ANTARESTAR
+          </Link>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              background: "rgba(255,255,255,0.12)",
+              borderRadius: 999,
+              padding: "8px 16px",
+              maxWidth: 320,
+              fontSize: 13,
+              color: "rgba(255,255,255,0.7)",
+            }}
+          >
+            🔍 <span style={{ marginLeft: 8 }}>Cari....</span>
+          </div>
+
+          <nav
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 18,
+              fontSize: 13,
+              color: "rgba(255,255,255,0.85)",
+              textTransform: "uppercase",
+              letterSpacing: "0.04em",
+              fontWeight: 500,
+            }}
+          >
+            {ANTARESTAR_NAV.map((label) => (
+              <span key={label} style={{ cursor: "default" }}>
+                {label} ▾
+              </span>
+            ))}
+            <Link href={`/${brandTheme.slug}/cart`} style={{ color: "inherit", textDecoration: "none" }} aria-label="Cart">
+              🛒
+            </Link>
+            <Link href="/" style={{ color: "#FCD34D", textDecoration: "none", fontSize: 11 }}>
+              Demo Picker
+            </Link>
+          </nav>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header
@@ -34,8 +118,6 @@ export function BrandHeader() {
             color: brandTheme.colors.primary,
             textDecoration: "none",
             fontSize: 18,
-            letterSpacing: brandTheme.slug === "antarestar" ? "0.04em" : "normal",
-            textTransform: brandTheme.slug === "antarestar" ? "uppercase" : "none",
           }}
         >
           {brandTheme.name}

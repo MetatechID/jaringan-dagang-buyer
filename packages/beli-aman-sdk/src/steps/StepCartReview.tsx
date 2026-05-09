@@ -15,7 +15,16 @@ interface CartLine {
 }
 
 export function StepCartReview() {
-  const { apiOpts, brandTheme, submitCartReview, displayName, photoUrl, email } = useBeliAman();
+  const {
+    apiOpts,
+    brandTheme,
+    submitCartReview,
+    displayName,
+    photoUrl,
+    email,
+    brandSlug,
+    items,
+  } = useBeliAman();
 
   const [previewLines, setPreviewLines] = useState<CartLine[]>([]);
   const [previewTotal, setPreviewTotal] = useState(0);
@@ -37,17 +46,25 @@ export function StepCartReview() {
   }, [displayName]);
 
   // For preview, call the public catalog endpoints to get prices/names.
-  const { brandSlugForReview, itemsForReview } = useReviewItems();
+  // Use the brandSlug + items from the provider state directly (these are
+  // populated by open() before this step renders) instead of sessionStorage,
+  // which races with the initial render and shows an empty preview.
   useEffect(() => {
+    if (!brandSlug || items.length === 0) {
+      setPreviewLines([]);
+      setPreviewTotal(0);
+      setLoadingPreview(false);
+      return;
+    }
     let cancelled = false;
     (async () => {
       setLoadingPreview(true);
       try {
         const products = (await fetch(
-          apiOpts.bapUrl.replace(/\/$/, "") + `/api/v1/brands/${brandSlugForReview}/products`,
+          apiOpts.bapUrl.replace(/\/$/, "") + `/api/v1/brands/${brandSlug}/products`,
         ).then((r) => r.json())) as any[];
         const bySku = new Map(products.map((p) => [p.sku, p]));
-        const lines: CartLine[] = itemsForReview.map((it) => {
+        const lines: CartLine[] = items.map((it) => {
           const p = bySku.get(it.sku);
           return {
             sku: it.sku,
@@ -71,7 +88,7 @@ export function StepCartReview() {
     return () => {
       cancelled = true;
     };
-  }, [apiOpts.bapUrl, brandSlugForReview, itemsForReview]);
+  }, [apiOpts.bapUrl, brandSlug, items]);
 
   const handleContinue = async () => {
     setErr(null);
@@ -197,22 +214,3 @@ export function StepCartReview() {
   );
 }
 
-// Helper hook to read brandSlug + items from the provider via a public read API.
-function useReviewItems() {
-  const { brandTheme } = useBeliAman();
-  // brandSlug + items live inside the provider's private state; we expose
-  // brandSlug via brandTheme and read items from the on-screen order if it
-  // already exists. As a fallback we trust the brand picker / button to have
-  // populated the cart before reaching this step.
-  // For the cart-review preview we re-fetch the catalog and project the SKUs
-  // we know about. The items themselves were captured at open() time and are
-  // accessible via a non-public hook in BeliAmanProvider, but to keep the
-  // public surface clean we re-derive from sessionStorage.
-  const flow = (typeof window !== "undefined" && JSON.parse(window.sessionStorage.getItem("ba_flow_v1") || "null")) as
-    | null
-    | { brandSlug: string; items: { sku: string; qty: number }[] };
-  return {
-    brandSlugForReview: flow?.brandSlug || brandTheme.slug,
-    itemsForReview: flow?.items || [],
-  };
-}

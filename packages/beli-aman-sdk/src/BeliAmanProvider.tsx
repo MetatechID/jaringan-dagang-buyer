@@ -69,6 +69,10 @@ interface BeliAmanContextValue {
   // current order (set after createOrder)
   order: OrderResponse | null;
 
+  // current cart context (set when open() is called)
+  brandSlug: string;
+  items: CartItemInput[];
+
   // mocked payment selection (visual fidelity only)
   paymentTab: "va" | "ewallet" | "qris" | "card" | "retail";
   paymentBank: string;
@@ -146,6 +150,9 @@ export function BeliAmanProvider({
   const [paymentBank, setPaymentBank] = useState<string>("BCA");
 
   // Restore flow on mount (single shot).
+  // Only auto-restore if the user is on the SAME page they started the flow on
+  // (resumeUrl matches current href). Otherwise the modal would pop open on
+  // unrelated pages — e.g. landing on /antarestar/ and seeing a stale cart-review.
   const restoredRef = useRef(false);
   useEffect(() => {
     if (restoredRef.current) return;
@@ -155,24 +162,32 @@ export function BeliAmanProvider({
     resolveRedirectSignIn(config.firebase).catch(() => null);
 
     const saved = readFlow();
-    if (saved && saved.step !== "done") {
-      setBrandSlug(saved.brandSlug);
-      setItems(saved.items);
-      setStep(saved.step);
-      setIsOpen(true);
-      // Reconcile order state from server
-      if (saved.orderId) {
-        api
-          .getOrder(apiOptsRef.current!, saved.orderId)
-          .then((o) => {
-            setOrder(o);
-            // Server is source of truth — adjust step if state ahead of UI
-            if (o.state === "ESCROW_HELD") setStep("done");
-          })
-          .catch(() => {
-            /* stale order — ignore */
-          });
-      }
+    if (!saved || saved.step === "done") return;
+
+    const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+    const sameUrl = saved.resumeUrl && currentUrl && saved.resumeUrl === currentUrl;
+    if (!sameUrl) {
+      // Stale flow from a previous PDP. Discard it so the modal doesn't
+      // pop up on the home page / a different product.
+      clearFlow();
+      return;
+    }
+
+    setBrandSlug(saved.brandSlug);
+    setItems(saved.items);
+    setStep(saved.step);
+    setIsOpen(true);
+    // Reconcile order state from server
+    if (saved.orderId) {
+      api
+        .getOrder(apiOptsRef.current!, saved.orderId)
+        .then((o) => {
+          setOrder(o);
+          if (o.state === "ESCROW_HELD") setStep("done");
+        })
+        .catch(() => {
+          /* stale order — ignore */
+        });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -307,6 +322,8 @@ export function BeliAmanProvider({
     displayName,
     photoUrl,
     order,
+    brandSlug,
+    items,
     paymentTab,
     paymentBank,
     setPaymentTab,
