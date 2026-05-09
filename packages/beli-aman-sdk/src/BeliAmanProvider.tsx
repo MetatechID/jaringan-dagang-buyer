@@ -150,9 +150,12 @@ export function BeliAmanProvider({
   const [paymentBank, setPaymentBank] = useState<string>("BCA");
 
   // Restore flow on mount (single shot).
-  // Only auto-restore if the user is on the SAME page they started the flow on
-  // (resumeUrl matches current href). Otherwise the modal would pop open on
-  // unrelated pages — e.g. landing on /antarestar/ and seeing a stale cart-review.
+  // We only auto-restore in two narrow cases:
+  //   (a) An order has already been created (we're past payment-confirm) so
+  //       we can re-show the "Done" or "Processing" step, OR
+  //   (b) The user is mid-payment and refreshed the same payment URL.
+  // We deliberately do NOT auto-restore the early steps (sign-in, cart-review,
+  // confirm) because the user expects those to start by clicking the button.
   const restoredRef = useRef(false);
   useEffect(() => {
     if (restoredRef.current) return;
@@ -162,13 +165,19 @@ export function BeliAmanProvider({
     resolveRedirectSignIn(config.firebase).catch(() => null);
 
     const saved = readFlow();
-    if (!saved || saved.step === "done") return;
+    if (!saved) return;
 
+    // Always nuke completed or "early" flows — they must never auto-pop.
+    const earlySteps = new Set<FlowStep>(["sign-in", "cart-review", "confirm"]);
+    if (saved.step === "done" || earlySteps.has(saved.step)) {
+      clearFlow();
+      return;
+    }
+
+    // For payment / processing, also require the user to still be on the
+    // same URL — otherwise discard.
     const currentUrl = typeof window !== "undefined" ? window.location.href : "";
-    const sameUrl = saved.resumeUrl && currentUrl && saved.resumeUrl === currentUrl;
-    if (!sameUrl) {
-      // Stale flow from a previous PDP. Discard it so the modal doesn't
-      // pop up on the home page / a different product.
+    if (!saved.resumeUrl || saved.resumeUrl !== currentUrl) {
       clearFlow();
       return;
     }
