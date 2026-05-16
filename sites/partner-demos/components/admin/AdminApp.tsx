@@ -610,10 +610,10 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
         </div>
       </div>
 
-      {/* ---- Right: drafts + version history ---- */}
+      {/* ---- Right: drafts (with inline branch history) ---- */}
       <div style={{ borderLeft: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", minHeight: 0 }}>
         {drafts.length > 0 ? (
-          <div style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", padding: "12px 16px", maxHeight: "32%", overflowY: "auto" }}>
+          <div style={{ padding: "12px 16px", flex: 1, minHeight: 0, overflowY: "auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.4, color: "#fbbf24", textTransform: "uppercase" }}>
                 Draft Aktif · {drafts.length}
