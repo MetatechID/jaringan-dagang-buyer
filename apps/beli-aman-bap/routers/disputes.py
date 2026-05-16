@@ -51,6 +51,48 @@ async def open_dispute(
     )
     db.add(d)
     await db.flush()
+    await db.commit()
+
+    # Send Beckn /update with refund_request — best effort, non-fatal.
+    try:
+        import uuid as _uuid
+        from datetime import datetime as _dt, timezone as _tz
+        from beckn.outbound import send_beckn_request
+        from config import settings as _cfg
+        import os as _os
+        bpp_id = order.bpp_id or _os.environ.get("DEFAULT_BPP_ID", "bpp.jaringan-dagang.local")
+        bpp_uri = _os.environ.get("DEFAULT_BPP_URL", "http://localhost:8001/beckn")
+        env = {
+            "context": {
+                "domain": _cfg.domain, "country": _cfg.country_code, "city": _cfg.city_code,
+                "action": "update",
+                "core_version": _cfg.core_version,
+                "bap_id": _cfg.subscriber_id, "bap_uri": _cfg.subscriber_url,
+                "bpp_id": bpp_id, "bpp_uri": bpp_uri,
+                "transaction_id": str(order.id),
+                "message_id": str(_uuid.uuid4()),
+                "timestamp": _dt.now(_tz.utc).isoformat(),
+            },
+            "message": {
+                "order": {
+                    "id": order.seller_order_ref or order.id,
+                    "fulfillment_state": {"descriptor": {
+                        "code": "refund_request",
+                        "short_desc": body.reason.value,
+                        "name": body.note or "",
+                    }},
+                    "payment": {"params": {"amount": str(order.total_idr or 0), "currency": "IDR"}},
+                }
+            },
+        }
+        await send_beckn_request(
+            bpp_id=bpp_id, action="update", body=env,
+            target_url=f"{bpp_uri.rstrip('/')}/update",
+        )
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception("beckn /update for refund failed")
+
     return {"id": d.id, "order_id": d.order_id, "status": d.status.value}
 
 

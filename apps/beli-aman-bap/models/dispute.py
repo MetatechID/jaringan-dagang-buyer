@@ -42,3 +42,7 @@ class Dispute(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         default=DisputeStatus.OPEN,
     )
     resolution: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    # Correlation to seller's RefundRequest via Beckn /on_update tags.
+    bpp_refund_request_id: Mapped[str | None] = mapped_column(
+        String(64), nullable=True, index=True
+    )

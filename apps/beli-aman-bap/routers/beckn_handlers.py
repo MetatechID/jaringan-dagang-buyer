@@ -249,3 +249,60 @@ async def handle_on_confirm(
         return None
     candidate.seller_order_ref = bpp_order_id
     return None
+
+
+async def handle_on_update(
+    context: dict[str, Any],
+    message: dict[str, Any],
+    db: AsyncSession,
+) -> dict | None:
+    """Track refund lifecycle updates from the BPP.
+
+    Tags we listen for:
+      - refund_pending  → record bpp_refund_request_id on the Dispute
+      - refund_approved → mark Dispute as brand_responding (Xendit pending)
+      - refund_denied   → mark Dispute as resolved (denied)
+      - refund_settled  → mark Dispute resolved + flip Order to REFUNDED
+    """
+    from models.dispute import Dispute, DisputeStatus
+    from models.order import OrderState
+
+    order_msg = message.get("order") or {}
+    bpp_order_id = order_msg.get("id")
+    if not bpp_order_id:
+        return None
+
+    # Find the local order
+    order = (await db.execute(
+        select(Order).where(Order.seller_order_ref == bpp_order_id)
+    )).scalar_one_or_none()
+    if order is None and len(bpp_order_id) == 36:
+        order = (await db.execute(
+            select(Order).where(Order.id == bpp_order_id)
+        )).scalar_one_or_none()
+    if order is None:
+        return None
+
+    dispute = (await db.execute(
+        select(Dispute).where(Dispute.order_id == order.id).order_by(Dispute.created_at.desc())
+    )).scalars().first()
+
+    for tag in order_msg.get("tags") or []:
+        code = tag.get("code")
+        kv = {x.get("code"): x.get("value") for x in tag.get("list") or []}
+        if code == "refund_pending" and dispute is not None:
+            dispute.bpp_refund_request_id = kv.get("refund_request_id")
+        elif code == "refund_approved" and dispute is not None:
+            dispute.bpp_refund_request_id = kv.get("refund_request_id") or dispute.bpp_refund_request_id
+            dispute.status = DisputeStatus.BRAND_RESPONDING
+        elif code == "refund_denied" and dispute is not None:
+            dispute.status = DisputeStatus.RESOLVED
+            dispute.resolution = "denied"
+            dispute.note = kv.get("seller_note") or dispute.note
+        elif code == "refund_settled":
+            if dispute is not None:
+                dispute.status = DisputeStatus.RESOLVED
+                dispute.resolution = "refunded"
+            if order.state != OrderState.REFUNDED:
+                order.state = OrderState.REFUNDED
+    return None
