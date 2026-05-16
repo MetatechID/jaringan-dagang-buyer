@@ -14,7 +14,7 @@ from deps import get_current_profile
 from models.order import Order, OrderState
 from models.profile import BeliAmanProfile
 from services import escrow as escrow_service
-from services import seller_bridge
+from services import beckn_orders
 from services.state_machine import StateTransitionError, lock_order_for_update, transition
 
 router = APIRouter(prefix="/api/v1/orders", tags=["payments"])
@@ -49,8 +49,10 @@ async def confirm_payment(
         description="Funds held by Beli Aman pending receipt",
     )
 
-    # Best-effort: post to seller. Don't fail the request if this fails.
-    await seller_bridge.post_order(order_dict={
+    # Best-effort: send Beckn /confirm to seller's BPP. Don't fail the request
+    # if this fails — seller dashboard just won't show the order. Replaces the
+    # legacy seller_bridge HTTP shortcut.
+    await beckn_orders.confirm_order(order_dict={
         "order_id": order.id,
         "bap_id": order.bap_id,
         "bpp_id": order.bpp_id,
