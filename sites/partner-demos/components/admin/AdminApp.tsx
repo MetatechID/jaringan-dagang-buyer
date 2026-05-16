@@ -597,28 +597,28 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
                 target="_blank"
                 rel="noreferrer"
                 style={{
+                  background: "transparent",
+                  border: "1px solid rgba(255,255,255,0.16)",
+                  color: "rgba(255,255,255,0.85)",
                   padding: "6px 12px",
                   borderRadius: 999,
-                  background: "rgba(212,162,76,0.16)",
-                  border: `1px solid ${accent}`,
-                  color: accent,
                   fontSize: 11,
-                  fontWeight: 700,
+                  fontWeight: 600,
                   textDecoration: "none",
                   letterSpacing: 0.2,
                 }}
               >
-                ↗ Buka full pratinjau
+                Buka pratinjau
               </a>
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(previewUrl);
-                  setMessages((curr) => [...curr, { role: "system", content: `🔗 Link pratinjau disalin — bisa langsung dishare ke tim marketing.`, ts: Date.now() }]);
+                  setMessages((curr) => [...curr, { role: "system", content: `Link pratinjau disalin — bisa langsung dishare ke tim marketing.`, ts: Date.now() }]);
                 }}
                 style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.16)", color: "rgba(255,255,255,0.85)", padding: "6px 12px", borderRadius: 999, fontSize: 11, cursor: "pointer", fontWeight: 600 }}
                 title={previewUrl}
               >
-                🔗 Salin link
+                Salin link
               </button>
             </>
           ) : null}
