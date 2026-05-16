@@ -413,26 +413,55 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
 
   const accent = brandTheme.colors.primary;
 
+  // Collapsible sidebars — state persisted per browser so the layout sticks
+  // across refreshes / share-link opens.
+  const [leftCollapsed, setLeftCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("vibe-left-collapsed") === "1";
+  });
+  const [rightCollapsed, setRightCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("vibe-right-collapsed") === "1";
+  });
+  useEffect(() => {
+    try { window.localStorage.setItem("vibe-left-collapsed", leftCollapsed ? "1" : "0"); } catch {}
+  }, [leftCollapsed]);
+  useEffect(() => {
+    try { window.localStorage.setItem("vibe-right-collapsed", rightCollapsed ? "1" : "0"); } catch {}
+  }, [rightCollapsed]);
+  const leftWidth = leftCollapsed ? "40px" : "minmax(0, 340px)";
+  const rightWidth = rightCollapsed ? "40px" : "minmax(0, 320px)";
+
   return (
     <div
       style={{
-        height: "calc(100vh - 64px)",
+        height: "100vh",
         display: "grid",
-        gridTemplateColumns: "minmax(0, 340px) minmax(0, 1fr) minmax(0, 320px)",
+        gridTemplateColumns: `${leftWidth} minmax(0, 1fr) ${rightWidth}`,
         background: "#0F172A",
         color: "#E2E8F0",
       }}
       className="admin-grid"
     >
       {/* ---- Left: chat ---- */}
+      {leftCollapsed ? (
+        <CollapsedRail side="left" onExpand={() => setLeftCollapsed(false)} label="Chat" accent={accent} />
+      ) : (
       <div style={{ borderRight: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", minHeight: 0 }}>
-        <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.4, color: accent, textTransform: "uppercase" }}>
-            Vibe Editor · Safiya Food
+        <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "flex-start", gap: 10 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.4, color: accent, textTransform: "uppercase" }}>
+              Vibe Editor · Safiya Food
+            </div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              Logged in as {email}
+            </div>
           </div>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>
-            Logged in as {email}
-          </div>
+          <button
+            onClick={() => setLeftCollapsed(true)}
+            title="Collapse"
+            style={{ background: "transparent", border: 0, color: "rgba(255,255,255,0.45)", cursor: "pointer", fontSize: 16, padding: 2, lineHeight: 1 }}
+          >‹</button>
         </div>
 
         <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "14px 16px", minHeight: 0 }}>
@@ -490,6 +519,7 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
           </button>
         </form>
       </div>
+      )}
 
       {/* ---- Center: preview ---- */}
       <div style={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
@@ -509,36 +539,24 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
             🌐 Domain
           </button>
           {previewUrl ? (
-            <>
-              <a
-                href={previewUrl}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  background: "transparent",
-                  border: "1px solid rgba(255,255,255,0.16)",
-                  color: "rgba(255,255,255,0.85)",
-                  padding: "6px 12px",
-                  borderRadius: 999,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  textDecoration: "none",
-                  letterSpacing: 0.2,
-                }}
-              >
-                Buka pratinjau
-              </a>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(previewUrl);
-                  setMessages((curr) => [...curr, { role: "system", content: `Link pratinjau disalin — bisa langsung dishare ke tim marketing.`, ts: Date.now() }]);
-                }}
-                style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.16)", color: "rgba(255,255,255,0.85)", padding: "6px 12px", borderRadius: 999, fontSize: 11, cursor: "pointer", fontWeight: 600 }}
-                title={previewUrl}
-              >
-                Salin link
-              </button>
-            </>
+            <a
+              href={previewUrl}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                background: "transparent",
+                border: "1px solid rgba(255,255,255,0.16)",
+                color: "rgba(255,255,255,0.85)",
+                padding: "6px 12px",
+                borderRadius: 999,
+                fontSize: 11,
+                fontWeight: 600,
+                textDecoration: "none",
+                letterSpacing: 0.2,
+              }}
+            >
+              Buka pratinjau
+            </a>
           ) : null}
           {draftBranch ? (
             <button
@@ -611,28 +629,38 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
       </div>
 
       {/* ---- Right: drafts (with inline branch history) ---- */}
+      {rightCollapsed ? (
+        <CollapsedRail side="right" onExpand={() => setRightCollapsed(false)} label="Drafts" accent="#fbbf24" />
+      ) : (
       <div style={{ borderLeft: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", minHeight: 0 }}>
         {drafts.length > 0 ? (
           <div style={{ padding: "12px 16px", flex: 1, minHeight: 0, overflowY: "auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8, gap: 8 }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.4, color: "#fbbf24", textTransform: "uppercase" }}>
                 Draft Aktif · {drafts.length}
               </div>
-              <button
-                onClick={async () => {
-                  if (!confirm(`Discard semua draft yang umur >14 hari?`)) return;
-                  try {
-                    const r = await api<{ pruned: string[]; total: number }>("/api/admin/drafts/prune?days=14", { method: "POST" });
-                    setMessages((curr) => [...curr, { role: "system", content: `🗑 Pruned ${r.pruned.length} stale draft(s) (umur >14 hari).`, ts: Date.now() }]);
-                    refreshDrafts();
-                  } catch (e: any) {
-                    setErr(String(e));
-                  }
-                }}
-                style={{ background: "transparent", border: 0, color: "#fca5a5", cursor: "pointer", textDecoration: "underline", padding: 0, fontSize: 10 }}
-              >
-                Prune {">"} 14d
-              </button>
+              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <button
+                  onClick={async () => {
+                    if (!confirm(`Discard semua draft yang umur >14 hari?`)) return;
+                    try {
+                      const r = await api<{ pruned: string[]; total: number }>("/api/admin/drafts/prune?days=14", { method: "POST" });
+                      setMessages((curr) => [...curr, { role: "system", content: `🗑 Pruned ${r.pruned.length} stale draft(s) (umur >14 hari).`, ts: Date.now() }]);
+                      refreshDrafts();
+                    } catch (e: any) {
+                      setErr(String(e));
+                    }
+                  }}
+                  style={{ background: "transparent", border: 0, color: "#fca5a5", cursor: "pointer", textDecoration: "underline", padding: 0, fontSize: 10 }}
+                >
+                  Prune {">"} 14d
+                </button>
+                <button
+                  onClick={() => setRightCollapsed(true)}
+                  title="Collapse"
+                  style={{ background: "transparent", border: 0, color: "rgba(255,255,255,0.45)", cursor: "pointer", fontSize: 16, padding: 0, lineHeight: 1 }}
+                >›</button>
+              </div>
             </div>
             {drafts.map((d) => {
               const active = d.branch === draftBranch;
@@ -703,9 +731,18 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
               );
             })}
           </div>
-        ) : null}
+        ) : (
+          <div style={{ padding: "12px 16px", display: "flex", justifyContent: "flex-end" }}>
+            <button
+              onClick={() => setRightCollapsed(true)}
+              title="Collapse"
+              style={{ background: "transparent", border: 0, color: "rgba(255,255,255,0.45)", cursor: "pointer", fontSize: 16, padding: 0, lineHeight: 1 }}
+            >›</button>
+          </div>
+        )}
 
       </div>
+      )}
       <style>{`
         @media (max-width: 1024px) {
           .admin-grid {
@@ -1010,6 +1047,56 @@ function DomainsModal({ accent, brandSlug, onClose }: { accent: string; brandSlu
         </div>
       </div>
     </div>
+  );
+}
+
+function CollapsedRail({
+  side,
+  onExpand,
+  label,
+  accent,
+}: {
+  side: "left" | "right";
+  onExpand: () => void;
+  label: string;
+  accent: string;
+}) {
+  return (
+    <button
+      onClick={onExpand}
+      title={`Expand ${label}`}
+      style={{
+        width: 40,
+        height: "100%",
+        background: "transparent",
+        border: 0,
+        borderRight: side === "left" ? "1px solid rgba(255,255,255,0.08)" : 0,
+        borderLeft: side === "right" ? "1px solid rgba(255,255,255,0.08)" : 0,
+        color: "rgba(255,255,255,0.55)",
+        cursor: "pointer",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        padding: "14px 0",
+        gap: 10,
+      }}
+    >
+      <span style={{ fontSize: 16, lineHeight: 1, color: accent }}>{side === "left" ? "›" : "‹"}</span>
+      <span
+        style={{
+          writingMode: "vertical-rl",
+          transform: "rotate(180deg)",
+          fontSize: 10,
+          fontWeight: 700,
+          letterSpacing: 1.6,
+          textTransform: "uppercase",
+          color: accent,
+        }}
+      >
+        {label}
+      </span>
+    </button>
   );
 }
 
