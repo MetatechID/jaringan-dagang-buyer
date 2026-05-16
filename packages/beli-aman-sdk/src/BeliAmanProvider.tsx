@@ -18,6 +18,8 @@ import {
   getFirebaseAuth,
   resolveRedirectSignIn,
   watchUser,
+  signInWithGoogle,
+  signOutCurrent,
   type FirebaseConfig,
 } from "./lib/firebase";
 import { api, type ApiOptions, type OrderResponse, type ShippingChoice } from "./lib/api";
@@ -40,6 +42,18 @@ import { StepDone } from "./steps/StepDone";
 export interface CartItemInput {
   sku: string;
   qty: number;
+}
+
+export interface SavedAddress {
+  id?: string;
+  recipient_name?: string;
+  phone_e164?: string;
+  line1?: string;
+  kota?: string;
+  provinsi?: string;
+  postal_code?: string;
+  is_default?: boolean;
+  label?: string;
 }
 
 export interface BeliAmanConfig {
@@ -86,6 +100,13 @@ interface BeliAmanContextValue {
 
   // step actions
   startSignIn: () => Promise<void>;
+  /** Trigger Beli Aman identity SSO sign-in (Google) without opening the
+   *  checkout flow. Use this for top-level "Masuk" / "Daftar" buttons. */
+  signInIdentity: () => Promise<void>;
+  /** Sign the user out of Beli Aman identity. */
+  signOutIdentity: () => Promise<void>;
+  /** User's default saved address (if any). Loaded after sign-in. */
+  defaultAddress: SavedAddress | null;
   submitCartReview: (input: { addressInline: any; shipping?: ShippingChoice }) => Promise<void>;
   proceedToPayment: () => Promise<void>;
   confirmPayment: () => Promise<void>;
@@ -126,6 +147,7 @@ export function BeliAmanProvider({
   const [email, setEmail] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [defaultAddress, setDefaultAddress] = useState<SavedAddress | null>(null);
 
   useEffect(() => {
     const unsub = watchUser(config.firebase, (user) => {
@@ -133,6 +155,7 @@ export function BeliAmanProvider({
       setEmail(user?.email ?? null);
       setDisplayName(user?.displayName ?? null);
       setPhotoUrl(user?.photoURL ?? null);
+      if (!user) setDefaultAddress(null);
     });
     return unsub;
   }, [config.firebase]);
@@ -268,6 +291,60 @@ export function BeliAmanProvider({
     }
   }, [apiOpts]);
 
+  const signInIdentity = useCallback(async () => {
+    try {
+      await signInWithGoogle(config.firebase);
+      // Exchange Firebase token → BAP profile so the user has a server-side record.
+      try {
+        await api.exchangeToken(apiOpts);
+      } catch {
+        /* exchange failure is non-fatal for the identity UI */
+      }
+    } catch (e: any) {
+      if (e?.message === "REDIRECT_IN_PROGRESS") return;
+      throw e;
+    }
+  }, [apiOpts, config.firebase]);
+
+  const signOutIdentity = useCallback(async () => {
+    try {
+      await signOutCurrent(config.firebase);
+    } finally {
+      setDefaultAddress(null);
+    }
+  }, [config.firebase]);
+
+  // Load the user's saved default address once they're signed in.
+  useEffect(() => {
+    if (!signedIn) {
+      setDefaultAddress(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const addresses = (await api.listAddresses(apiOpts)) as SavedAddress[] | { data: SavedAddress[] } | null;
+        if (cancelled) return;
+        const list: SavedAddress[] = Array.isArray(addresses)
+          ? addresses
+          : Array.isArray((addresses as any)?.data)
+            ? (addresses as any).data
+            : [];
+        if (list.length === 0) {
+          setDefaultAddress(null);
+          return;
+        }
+        const def = list.find((a) => a.is_default) ?? list[0];
+        setDefaultAddress(def);
+      } catch {
+        if (!cancelled) setDefaultAddress(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [apiOpts, signedIn]);
+
   const submitCartReview = useCallback(
     async ({ addressInline, shipping }: { addressInline: any; shipping?: ShippingChoice }) => {
       try {
@@ -345,6 +422,9 @@ export function BeliAmanProvider({
     close,
     goTo,
     startSignIn,
+    signInIdentity,
+    signOutIdentity,
+    defaultAddress,
     submitCartReview,
     proceedToPayment,
     confirmPayment,

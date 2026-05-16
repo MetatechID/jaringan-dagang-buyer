@@ -14,7 +14,11 @@
       "gallery": [
         "/brands/safiyafood/products/kurma-sukari-front.svg",
         "/brands/safiyafood/products/kurma-sukari-side.svg",
-        "/brands/safiyafood/products/kurma-sukari-info.svg"
+        "/brands/safiyafood/products/kurma-sukari-info.svg",
+        "/brands/safiyafood/products/saf-suk-500.svg",
+        "/brands/safiyafood/products/saf-suk-850.svg",
+        "/brands/safiyafood/products/saf-suk-1k.svg",
+        "/brands/safiyafood/products/saf-suk-3k.svg"
       ],
       "category": "Kurma",
       "beckn_category_id": "food-beverages-dates",
@@ -46,12 +50,7 @@
           "weight_grams": 540,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-suk-500.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-suk-500.svg",
-            "/brands/safiyafood/products/kurma-sukari-front.svg",
-            "/brands/safiyafood/products/kurma-sukari-side.svg",
-            "/brands/safiyafood/products/kurma-sukari-info.svg"
-          ]
+          "image_index": 3
         },
         {
           "sku": "SAF-SUK-850",
@@ -64,12 +63,7 @@
           "weight_grams": 900,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-suk-850.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-suk-850.svg",
-            "/brands/safiyafood/products/kurma-sukari-front.svg",
-            "/brands/safiyafood/products/kurma-sukari-side.svg",
-            "/brands/safiyafood/products/kurma-sukari-info.svg"
-          ]
+          "image_index": 4
         },
         {
           "sku": "SAF-SUK-1K",
@@ -82,12 +76,7 @@
           "weight_grams": 1060,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-suk-1k.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-suk-1k.svg",
-            "/brands/safiyafood/products/kurma-sukari-front.svg",
-            "/brands/safiyafood/products/kurma-sukari-side.svg",
-            "/brands/safiyafood/products/kurma-sukari-info.svg"
-          ]
+          "image_index": 5
         },
         {
           "sku": "SAF-SUK-3K",
@@ -100,12 +89,7 @@
           "weight_grams": 3100,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-suk-3k.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-suk-3k.svg",
-            "/brands/safiyafood/products/kurma-sukari-front.svg",
-            "/brands/safiyafood/products/kurma-sukari-side.svg",
-            "/brands/safiyafood/products/kurma-sukari-info.svg"
-          ]
+          "image_index": 6
         }
       ]
     },
@@ -121,7 +105,10 @@
       "gallery": [
         "/brands/safiyafood/products/kurma-ajwa-front.svg",
         "/brands/safiyafood/products/kurma-ajwa-side.svg",
-        "/brands/safiyafood/products/kurma-ajwa-info.svg"
+        "/brands/safiyafood/products/kurma-ajwa-info.svg",
+        "/brands/safiyafood/products/saf-ajw-500.svg",
+        "/brands/safiyafood/products/saf-ajw-850.svg",
+        "/brands/safiyafood/products/saf-ajw-1k.svg"
       ],
       "category": "Kurma",
       "beckn_category_id": "food-beverages-dates",
@@ -152,12 +139,7 @@
           "weight_grams": 540,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-ajw-500.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-ajw-500.svg",
-            "/brands/safiyafood/products/kurma-ajwa-front.svg",
-            "/brands/safiyafood/products/kurma-ajwa-side.svg",
-            "/brands/safiyafood/products/kurma-ajwa-info.svg"
-          ]
+          "image_index": 3
         },
         {
           "sku": "SAF-AJW-850",
@@ -170,12 +152,7 @@
           "weight_grams": 900,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-ajw-850.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-ajw-850.svg",
-            "/brands/safiyafood/products/kurma-ajwa-front.svg",
-            "/brands/safiyafood/products/kurma-ajwa-side.svg",
-            "/brands/safiyafood/products/kurma-ajwa-info.svg"
-          ]
+          "image_index": 4
         },
         {
           "sku": "SAF-AJW-1K",
@@ -188,12 +165,7 @@
           "weight_grams": 1060,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-ajw-1k.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-ajw-1k.svg",
-            "/brands/safiyafood/products/kurma-ajwa-front.svg",
-            "/brands/safiyafood/products/kurma-ajwa-side.svg",
-            "/brands/safiyafood/products/kurma-ajwa-info.svg"
-          ]
+          "image_index": 5
         }
       ]
     },
@@ -208,7 +180,9 @@
       "image": "/brands/safiyafood/products/kurma-tunisia-tangkai-front.svg",
       "gallery": [
         "/brands/safiyafood/products/kurma-tunisia-tangkai-front.svg",
-        "/brands/safiyafood/products/kurma-tunisia-tangkai-side.svg"
+        "/brands/safiyafood/products/kurma-tunisia-tangkai-side.svg",
+        "/brands/safiyafood/products/saf-tnt-500.svg",
+        "/brands/safiyafood/products/saf-tnt-1k.svg"
       ],
       "category": "Kurma",
       "beckn_category_id": "food-beverages-dates",
@@ -238,11 +212,7 @@
           "weight_grams": 540,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-tnt-500.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-tnt-500.svg",
-            "/brands/safiyafood/products/kurma-tunisia-tangkai-front.svg",
-            "/brands/safiyafood/products/kurma-tunisia-tangkai-side.svg"
-          ]
+          "image_index": 2
         },
         {
           "sku": "SAF-TNT-1K",
@@ -255,11 +225,7 @@
           "weight_grams": 1060,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-tnt-1k.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-tnt-1k.svg",
-            "/brands/safiyafood/products/kurma-tunisia-tangkai-front.svg",
-            "/brands/safiyafood/products/kurma-tunisia-tangkai-side.svg"
-          ]
+          "image_index": 3
         }
       ]
     },
@@ -274,7 +240,9 @@
       "image": "/brands/safiyafood/products/kurma-tunisia-madu-front.svg",
       "gallery": [
         "/brands/safiyafood/products/kurma-tunisia-madu-front.svg",
-        "/brands/safiyafood/products/kurma-tunisia-madu-side.svg"
+        "/brands/safiyafood/products/kurma-tunisia-madu-side.svg",
+        "/brands/safiyafood/products/saf-tmd-500.svg",
+        "/brands/safiyafood/products/saf-tmd-1k.svg"
       ],
       "category": "Kurma",
       "beckn_category_id": "food-beverages-dates",
@@ -304,11 +272,7 @@
           "weight_grams": 540,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-tmd-500.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-tmd-500.svg",
-            "/brands/safiyafood/products/kurma-tunisia-madu-front.svg",
-            "/brands/safiyafood/products/kurma-tunisia-madu-side.svg"
-          ]
+          "image_index": 2
         },
         {
           "sku": "SAF-TMD-1K",
@@ -321,11 +285,7 @@
           "weight_grams": 1060,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-tmd-1k.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-tmd-1k.svg",
-            "/brands/safiyafood/products/kurma-tunisia-madu-front.svg",
-            "/brands/safiyafood/products/kurma-tunisia-madu-side.svg"
-          ]
+          "image_index": 3
         }
       ]
     },
@@ -340,7 +300,9 @@
       "image": "/brands/safiyafood/products/kurma-khalas-front.svg",
       "gallery": [
         "/brands/safiyafood/products/kurma-khalas-front.svg",
-        "/brands/safiyafood/products/kurma-khalas-side.svg"
+        "/brands/safiyafood/products/kurma-khalas-side.svg",
+        "/brands/safiyafood/products/saf-kha-500.svg",
+        "/brands/safiyafood/products/saf-kha-1k.svg"
       ],
       "category": "Kurma",
       "beckn_category_id": "food-beverages-dates",
@@ -370,11 +332,7 @@
           "weight_grams": 540,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-kha-500.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-kha-500.svg",
-            "/brands/safiyafood/products/kurma-khalas-front.svg",
-            "/brands/safiyafood/products/kurma-khalas-side.svg"
-          ]
+          "image_index": 2
         },
         {
           "sku": "SAF-KHA-1K",
@@ -387,11 +345,7 @@
           "weight_grams": 1060,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-kha-1k.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-kha-1k.svg",
-            "/brands/safiyafood/products/kurma-khalas-front.svg",
-            "/brands/safiyafood/products/kurma-khalas-side.svg"
-          ]
+          "image_index": 3
         }
       ]
     },
@@ -407,7 +361,10 @@
       "gallery": [
         "/brands/safiyafood/products/muesli-fruit-seed-front.svg",
         "/brands/safiyafood/products/muesli-fruit-seed-side.svg",
-        "/brands/safiyafood/products/muesli-fruit-seed-info.svg"
+        "/brands/safiyafood/products/muesli-fruit-seed-info.svg",
+        "/brands/safiyafood/products/saf-mus-fs-300.svg",
+        "/brands/safiyafood/products/saf-mus-fs-500.svg",
+        "/brands/safiyafood/products/saf-mus-fs-1k.svg"
       ],
       "category": "Sereal & Granola",
       "beckn_category_id": "food-beverages-cereal",
@@ -438,12 +395,7 @@
           "weight_grams": 320,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-mus-fs-300.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-mus-fs-300.svg",
-            "/brands/safiyafood/products/muesli-fruit-seed-front.svg",
-            "/brands/safiyafood/products/muesli-fruit-seed-side.svg",
-            "/brands/safiyafood/products/muesli-fruit-seed-info.svg"
-          ]
+          "image_index": 3
         },
         {
           "sku": "SAF-MUS-FS-500",
@@ -456,12 +408,7 @@
           "weight_grams": 540,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-mus-fs-500.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-mus-fs-500.svg",
-            "/brands/safiyafood/products/muesli-fruit-seed-front.svg",
-            "/brands/safiyafood/products/muesli-fruit-seed-side.svg",
-            "/brands/safiyafood/products/muesli-fruit-seed-info.svg"
-          ]
+          "image_index": 4
         },
         {
           "sku": "SAF-MUS-FS-1K",
@@ -474,12 +421,7 @@
           "weight_grams": 1060,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-mus-fs-1k.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-mus-fs-1k.svg",
-            "/brands/safiyafood/products/muesli-fruit-seed-front.svg",
-            "/brands/safiyafood/products/muesli-fruit-seed-side.svg",
-            "/brands/safiyafood/products/muesli-fruit-seed-info.svg"
-          ]
+          "image_index": 5
         }
       ]
     },
@@ -495,7 +437,9 @@
       "gallery": [
         "/brands/safiyafood/products/muesli-choco-milk-front.svg",
         "/brands/safiyafood/products/muesli-choco-milk-side.svg",
-        "/brands/safiyafood/products/muesli-choco-milk-info.svg"
+        "/brands/safiyafood/products/muesli-choco-milk-info.svg",
+        "/brands/safiyafood/products/saf-mus-cm-300.svg",
+        "/brands/safiyafood/products/saf-mus-cm-500.svg"
       ],
       "category": "Sereal & Granola",
       "beckn_category_id": "food-beverages-cereal",
@@ -525,12 +469,7 @@
           "weight_grams": 320,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-mus-cm-300.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-mus-cm-300.svg",
-            "/brands/safiyafood/products/muesli-choco-milk-front.svg",
-            "/brands/safiyafood/products/muesli-choco-milk-side.svg",
-            "/brands/safiyafood/products/muesli-choco-milk-info.svg"
-          ]
+          "image_index": 3
         },
         {
           "sku": "SAF-MUS-CM-500",
@@ -543,12 +482,7 @@
           "weight_grams": 540,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-mus-cm-500.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-mus-cm-500.svg",
-            "/brands/safiyafood/products/muesli-choco-milk-front.svg",
-            "/brands/safiyafood/products/muesli-choco-milk-side.svg",
-            "/brands/safiyafood/products/muesli-choco-milk-info.svg"
-          ]
+          "image_index": 4
         }
       ]
     },
@@ -563,7 +497,9 @@
       "image": "/brands/safiyafood/products/berry-yogurt-cereal-front.svg",
       "gallery": [
         "/brands/safiyafood/products/berry-yogurt-cereal-front.svg",
-        "/brands/safiyafood/products/berry-yogurt-cereal-side.svg"
+        "/brands/safiyafood/products/berry-yogurt-cereal-side.svg",
+        "/brands/safiyafood/products/saf-byc-300.svg",
+        "/brands/safiyafood/products/saf-byc-500.svg"
       ],
       "category": "Sereal & Granola",
       "beckn_category_id": "food-beverages-cereal",
@@ -593,11 +529,7 @@
           "weight_grams": 320,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-byc-300.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-byc-300.svg",
-            "/brands/safiyafood/products/berry-yogurt-cereal-front.svg",
-            "/brands/safiyafood/products/berry-yogurt-cereal-side.svg"
-          ]
+          "image_index": 2
         },
         {
           "sku": "SAF-BYC-500",
@@ -610,11 +542,7 @@
           "weight_grams": 540,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-byc-500.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-byc-500.svg",
-            "/brands/safiyafood/products/berry-yogurt-cereal-front.svg",
-            "/brands/safiyafood/products/berry-yogurt-cereal-side.svg"
-          ]
+          "image_index": 3
         }
       ]
     },
@@ -629,7 +557,9 @@
       "image": "/brands/safiyafood/products/chia-seed-front.svg",
       "gallery": [
         "/brands/safiyafood/products/chia-seed-front.svg",
-        "/brands/safiyafood/products/chia-seed-side.svg"
+        "/brands/safiyafood/products/chia-seed-side.svg",
+        "/brands/safiyafood/products/saf-chi-250.svg",
+        "/brands/safiyafood/products/saf-chi-500.svg"
       ],
       "category": "Healthy Pantry",
       "beckn_category_id": "food-beverages-pantry",
@@ -659,11 +589,7 @@
           "weight_grams": 280,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-chi-250.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-chi-250.svg",
-            "/brands/safiyafood/products/chia-seed-front.svg",
-            "/brands/safiyafood/products/chia-seed-side.svg"
-          ]
+          "image_index": 2
         },
         {
           "sku": "SAF-CHI-500",
@@ -676,11 +602,7 @@
           "weight_grams": 540,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-chi-500.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-chi-500.svg",
-            "/brands/safiyafood/products/chia-seed-front.svg",
-            "/brands/safiyafood/products/chia-seed-side.svg"
-          ]
+          "image_index": 3
         }
       ]
     },
@@ -695,7 +617,9 @@
       "image": "/brands/safiyafood/products/beras-merah-front.svg",
       "gallery": [
         "/brands/safiyafood/products/beras-merah-front.svg",
-        "/brands/safiyafood/products/beras-merah-side.svg"
+        "/brands/safiyafood/products/beras-merah-side.svg",
+        "/brands/safiyafood/products/saf-bmr-1k.svg",
+        "/brands/safiyafood/products/saf-bmr-2k.svg"
       ],
       "category": "Healthy Pantry",
       "beckn_category_id": "food-beverages-pantry",
@@ -725,11 +649,7 @@
           "weight_grams": 1060,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-bmr-1k.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-bmr-1k.svg",
-            "/brands/safiyafood/products/beras-merah-front.svg",
-            "/brands/safiyafood/products/beras-merah-side.svg"
-          ]
+          "image_index": 2
         },
         {
           "sku": "SAF-BMR-2K",
@@ -742,11 +662,7 @@
           "weight_grams": 2100,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-bmr-2k.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-bmr-2k.svg",
-            "/brands/safiyafood/products/beras-merah-front.svg",
-            "/brands/safiyafood/products/beras-merah-side.svg"
-          ]
+          "image_index": 3
         }
       ]
     },
@@ -761,7 +677,9 @@
       "image": "/brands/safiyafood/products/garam-himalaya-front.svg",
       "gallery": [
         "/brands/safiyafood/products/garam-himalaya-front.svg",
-        "/brands/safiyafood/products/garam-himalaya-side.svg"
+        "/brands/safiyafood/products/garam-himalaya-side.svg",
+        "/brands/safiyafood/products/saf-him-250.svg",
+        "/brands/safiyafood/products/saf-him-500.svg"
       ],
       "category": "Healthy Pantry",
       "beckn_category_id": "food-beverages-pantry",
@@ -791,11 +709,7 @@
           "weight_grams": 280,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-him-250.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-him-250.svg",
-            "/brands/safiyafood/products/garam-himalaya-front.svg",
-            "/brands/safiyafood/products/garam-himalaya-side.svg"
-          ]
+          "image_index": 2
         },
         {
           "sku": "SAF-HIM-500",
@@ -808,11 +722,7 @@
           "weight_grams": 540,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-him-500.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-him-500.svg",
-            "/brands/safiyafood/products/garam-himalaya-front.svg",
-            "/brands/safiyafood/products/garam-himalaya-side.svg"
-          ]
+          "image_index": 3
         }
       ]
     },
@@ -827,7 +737,9 @@
       "image": "/brands/safiyafood/products/saffron-front.svg",
       "gallery": [
         "/brands/safiyafood/products/saffron-front.svg",
-        "/brands/safiyafood/products/saffron-side.svg"
+        "/brands/safiyafood/products/saffron-side.svg",
+        "/brands/safiyafood/products/saf-saf-1g.svg",
+        "/brands/safiyafood/products/saf-saf-3g.svg"
       ],
       "category": "Healthy Pantry",
       "beckn_category_id": "food-beverages-pantry",
@@ -857,11 +769,7 @@
           "weight_grams": 20,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-saf-1g.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-saf-1g.svg",
-            "/brands/safiyafood/products/saffron-front.svg",
-            "/brands/safiyafood/products/saffron-side.svg"
-          ]
+          "image_index": 2
         },
         {
           "sku": "SAF-SAF-3G",
@@ -874,11 +782,7 @@
           "weight_grams": 30,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-saf-3g.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-saf-3g.svg",
-            "/brands/safiyafood/products/saffron-front.svg",
-            "/brands/safiyafood/products/saffron-side.svg"
-          ]
+          "image_index": 3
         }
       ]
     },
@@ -893,7 +797,9 @@
       "image": "/brands/safiyafood/products/madu-akasia-front.svg",
       "gallery": [
         "/brands/safiyafood/products/madu-akasia-front.svg",
-        "/brands/safiyafood/products/madu-akasia-side.svg"
+        "/brands/safiyafood/products/madu-akasia-side.svg",
+        "/brands/safiyafood/products/saf-mak-250.svg",
+        "/brands/safiyafood/products/saf-mak-500.svg"
       ],
       "category": "Madu",
       "beckn_category_id": "food-beverages-honey",
@@ -923,11 +829,7 @@
           "weight_grams": 380,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-mak-250.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-mak-250.svg",
-            "/brands/safiyafood/products/madu-akasia-front.svg",
-            "/brands/safiyafood/products/madu-akasia-side.svg"
-          ]
+          "image_index": 2
         },
         {
           "sku": "SAF-MAK-500",
@@ -940,11 +842,7 @@
           "weight_grams": 720,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-mak-500.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-mak-500.svg",
-            "/brands/safiyafood/products/madu-akasia-front.svg",
-            "/brands/safiyafood/products/madu-akasia-side.svg"
-          ]
+          "image_index": 3
         }
       ]
     },
@@ -959,7 +857,9 @@
       "image": "/brands/safiyafood/products/madu-baduy-front.svg",
       "gallery": [
         "/brands/safiyafood/products/madu-baduy-front.svg",
-        "/brands/safiyafood/products/madu-baduy-side.svg"
+        "/brands/safiyafood/products/madu-baduy-side.svg",
+        "/brands/safiyafood/products/saf-mbd-250.svg",
+        "/brands/safiyafood/products/saf-mbd-500.svg"
       ],
       "category": "Madu",
       "beckn_category_id": "food-beverages-honey",
@@ -989,11 +889,7 @@
           "weight_grams": 380,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-mbd-250.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-mbd-250.svg",
-            "/brands/safiyafood/products/madu-baduy-front.svg",
-            "/brands/safiyafood/products/madu-baduy-side.svg"
-          ]
+          "image_index": 2
         },
         {
           "sku": "SAF-MBD-500",
@@ -1006,11 +902,7 @@
           "weight_grams": 720,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-mbd-500.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-mbd-500.svg",
-            "/brands/safiyafood/products/madu-baduy-front.svg",
-            "/brands/safiyafood/products/madu-baduy-side.svg"
-          ]
+          "image_index": 3
         }
       ]
     },
@@ -1025,7 +917,9 @@
       "image": "/brands/safiyafood/products/madu-murni-front.svg",
       "gallery": [
         "/brands/safiyafood/products/madu-murni-front.svg",
-        "/brands/safiyafood/products/madu-murni-side.svg"
+        "/brands/safiyafood/products/madu-murni-side.svg",
+        "/brands/safiyafood/products/saf-mmr-250.svg",
+        "/brands/safiyafood/products/saf-mmr-500.svg"
       ],
       "category": "Madu",
       "beckn_category_id": "food-beverages-honey",
@@ -1055,11 +949,7 @@
           "weight_grams": 380,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-mmr-250.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-mmr-250.svg",
-            "/brands/safiyafood/products/madu-murni-front.svg",
-            "/brands/safiyafood/products/madu-murni-side.svg"
-          ]
+          "image_index": 2
         },
         {
           "sku": "SAF-MMR-500",
@@ -1072,11 +962,7 @@
           "weight_grams": 720,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-mmr-500.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-mmr-500.svg",
-            "/brands/safiyafood/products/madu-murni-front.svg",
-            "/brands/safiyafood/products/madu-murni-side.svg"
-          ]
+          "image_index": 3
         }
       ]
     },
@@ -1091,7 +977,9 @@
       "image": "/brands/safiyafood/products/vco-virgin-coconut-oil-front.svg",
       "gallery": [
         "/brands/safiyafood/products/vco-virgin-coconut-oil-front.svg",
-        "/brands/safiyafood/products/vco-virgin-coconut-oil-side.svg"
+        "/brands/safiyafood/products/vco-virgin-coconut-oil-side.svg",
+        "/brands/safiyafood/products/saf-vco-250.svg",
+        "/brands/safiyafood/products/saf-vco-500.svg"
       ],
       "category": "Madu",
       "beckn_category_id": "food-beverages-honey",
@@ -1121,11 +1009,7 @@
           "weight_grams": 320,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-vco-250.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-vco-250.svg",
-            "/brands/safiyafood/products/vco-virgin-coconut-oil-front.svg",
-            "/brands/safiyafood/products/vco-virgin-coconut-oil-side.svg"
-          ]
+          "image_index": 2
         },
         {
           "sku": "SAF-VCO-500",
@@ -1138,11 +1022,7 @@
           "weight_grams": 600,
           "stock": 200,
           "image": "/brands/safiyafood/products/saf-vco-500.svg",
-          "gallery": [
-            "/brands/safiyafood/products/saf-vco-500.svg",
-            "/brands/safiyafood/products/vco-virgin-coconut-oil-front.svg",
-            "/brands/safiyafood/products/vco-virgin-coconut-oil-side.svg"
-          ]
+          "image_index": 3
         }
       ]
     }

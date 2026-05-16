@@ -3,17 +3,50 @@
 import Link from "next/link";
 import { useBeliAman } from "@jaringan-dagang/beli-aman-sdk";
 
+import { BeliAmanIdentityWidget } from "@/components/BeliAmanIdentityWidget";
+import { useCart } from "@/lib/cart";
+
 const ANTARESTAR_NAV = ["Apparel", "Bags", "Camping", "Footwear", "Jacket", "Sport"];
 
 const SAFIYA_NAV: Array<{ label: string; href: string }> = [
-  { label: "Kurma", href: "#kurma" },
-  { label: "Sereal", href: "#sereal" },
-  { label: "Pantry", href: "#pantry" },
-  { label: "Madu", href: "#madu" },
+  { label: "Kurma", href: "/safiyafood#kurma" },
+  { label: "Sereal", href: "/safiyafood#sereal" },
+  { label: "Pantry", href: "/safiyafood#pantry" },
+  { label: "Madu", href: "/safiyafood#madu" },
+  { label: "Ramadhan", href: "/safiyafood/promo" },
 ];
 
+function CartBadge({ brandSlug }: { brandSlug: string }) {
+  const { totalCount } = useCart(brandSlug);
+  if (totalCount <= 0) return null;
+  return (
+    <span
+      aria-label={`${totalCount} item di keranjang`}
+      style={{
+        position: "absolute",
+        top: -6,
+        right: -8,
+        background: "var(--c-accent, #D4A24C)",
+        color: "#fff",
+        minWidth: 18,
+        height: 18,
+        borderRadius: 999,
+        fontSize: 10,
+        fontWeight: 800,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "0 4px",
+        lineHeight: 1,
+      }}
+    >
+      {totalCount > 99 ? "99+" : totalCount}
+    </span>
+  );
+}
+
 export function BrandHeader() {
-  const { brandTheme } = useBeliAman();
+  const { brandTheme, signedIn, defaultAddress } = useBeliAman();
   const isAntarestar = brandTheme.slug === "antarestar";
   const isSafiya = brandTheme.slug === "safiyafood";
 
@@ -86,8 +119,9 @@ export function BrandHeader() {
                 {label} ▾
               </span>
             ))}
-            <Link href={`/${brandTheme.slug}/cart`} style={{ color: "inherit", textDecoration: "none" }} aria-label="Cart">
+            <Link href={`/${brandTheme.slug}/cart`} style={{ color: "inherit", textDecoration: "none", position: "relative", display: "inline-block" }} aria-label="Cart">
               🛒
+              <CartBadge brandSlug={brandTheme.slug} />
             </Link>
             <Link href="/" style={{ color: "#FCD34D", textDecoration: "none", fontSize: 11 }}>
               Demo Picker
@@ -143,33 +177,60 @@ export function BrandHeader() {
           }}
         >
           {isSafiya
-            ? SAFIYA_NAV.map((item) => (
-                <a
-                  key={item.label}
-                  href={`/${brandTheme.slug}${item.href}`}
-                  style={{
-                    color: "inherit",
-                    textDecoration: "none",
-                    fontWeight: 600,
-                    letterSpacing: 0.4,
-                  }}
-                >
-                  {item.label}
-                </a>
-              ))
+            ? SAFIYA_NAV.map((item) => {
+                const isPromo = item.href.endsWith("/promo");
+                return (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    style={{
+                      color: isPromo ? brandTheme.colors.primary : "inherit",
+                      textDecoration: "none",
+                      fontWeight: 600,
+                      letterSpacing: 0.4,
+                      ...(isPromo ? { fontStyle: "italic" } : {}),
+                    }}
+                  >
+                    {isPromo ? `🌙 ${item.label}` : item.label}
+                  </a>
+                );
+              })
             : (
               <Link href={`/${brandTheme.slug}`} style={{ color: "inherit", textDecoration: "none" }}>
                 Shop
               </Link>
             )}
-          <Link href={`/${brandTheme.slug}/cart`} style={{ color: "inherit", textDecoration: "none" }}>
+          <Link href={`/${brandTheme.slug}/cart`} style={{ color: "inherit", textDecoration: "none", position: "relative", display: "inline-block" }}>
             🛒 Cart
+            <CartBadge brandSlug={brandTheme.slug} />
           </Link>
-          <Link href="/" style={{ color: "var(--c-primary)", textDecoration: "none" }}>
+          <span style={{ width: 1, height: 22, background: "rgba(15,23,42,0.18)", display: "inline-block", margin: "0 4px" }} aria-hidden="true" />
+          <BeliAmanIdentityWidget variant="light" />
+          <Link href="/" style={{ color: "var(--c-primary)", textDecoration: "none", fontSize: 11 }}>
             Demo Picker
           </Link>
         </nav>
       </div>
+      {isSafiya && signedIn && defaultAddress ? (
+        <div
+          style={{
+            background: "var(--c-surface)",
+            borderTop: "1px solid rgba(15,23,42,0.06)",
+            padding: "8px 24px",
+            fontSize: 12,
+            color: "var(--c-text-muted)",
+          }}
+        >
+          <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            📍 Dikirim ke{" "}
+            <strong style={{ color: "var(--c-text)" }}>
+              {defaultAddress.label ?? defaultAddress.recipient_name ?? "Alamat tersimpan"}
+              {defaultAddress.kota ? ` · ${defaultAddress.kota}` : ""}
+              {defaultAddress.postal_code ? ` ${defaultAddress.postal_code}` : ""}
+            </strong>
+          </div>
+        </div>
+      ) : null}
     </header>
   );
 }

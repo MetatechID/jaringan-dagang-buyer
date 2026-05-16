@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
-"""Generate both the storefront catalog JSON and the BPP catalog JSON
-from a single source-of-truth defined in generate_assets.py.
+"""Generate both the storefront catalog JSON and the BPP catalog JSON from a
+single source-of-truth defined in generate_assets.py.
+
+Catalog shape per product (standard e-commerce):
+- ONE unified `gallery`: all parent views (front / side / info) followed by
+  each variant's primary image.
+- Each variant carries an `imageIndex` pointing to its slot in that gallery,
+  so the PDP can just move the selection (NOT replace the gallery) when the
+  buyer picks a different size.
 
 Writes:
   - sites/partner-demos/lib/brands/safiyafood-catalog.json   (storefront)
@@ -88,25 +95,37 @@ DESCRIPTIONS = {
 }
 
 CATEGORY_BECKN = {
-    "Kurma": "food-beverages-dates",
-    "Sereal & Granola": "food-beverages-cereal",
-    "Healthy Pantry": "food-beverages-pantry",
-    "Madu": "food-beverages-honey",
+    "Kurma":             "food-beverages-dates",
+    "Sereal & Granola":  "food-beverages-cereal",
+    "Healthy Pantry":    "food-beverages-pantry",
+    "Madu":              "food-beverages-honey",
 }
 
 
+def _build_unified_gallery(p: dict) -> tuple[list[str], dict[str, int]]:
+    """Return (gallery, sku_to_index).
+
+    Gallery layout:
+      [parent_view_0, parent_view_1, ..., variant_0, variant_1, ...]
+    """
+    slug = p["slug"]
+    gallery: list[str] = []
+    for view in p["parent_views"]:
+        gallery.append(f"{ASSET_BASE}/{slug}-{view}.svg")
+    sku_to_index: dict[str, int] = {}
+    for v in p["variants"]:
+        sku_to_index[v["sku"]] = len(gallery)
+        gallery.append(f"{ASSET_BASE}/{v['sku'].lower()}.svg")
+    return gallery, sku_to_index
+
+
 def build_storefront() -> dict:
-    """Schema consumed by sites/partner-demos. One product per parent SKU,
-    with parent gallery + per-variant gallery (so the PDP can swap images
-    when the user picks a size)."""
+    """Schema consumed by sites/partner-demos."""
     products = []
     for p in PRODUCTS:
-        slug = p["slug"]
-        first_view_path = f"{ASSET_BASE}/{slug}-{p['parent_views'][0]}.svg"
-        gallery = [f"{ASSET_BASE}/{slug}-{v}.svg" for v in p["parent_views"]]
+        gallery, idx = _build_unified_gallery(p)
         variants = []
         for v in p["variants"]:
-            sku_lower = v["sku"].lower()
             variants.append({
                 "sku": v["sku"],
                 "label": v["size"],
@@ -115,19 +134,19 @@ def build_storefront() -> dict:
                 "compareAtPriceIdr": v["compare"],
                 "weightGrams": v["weight"],
                 "stock": 200,
-                "image": f"{ASSET_BASE}/{sku_lower}.svg",
-                "gallery": [f"{ASSET_BASE}/{sku_lower}.svg", *gallery],
+                "image": gallery[idx[v["sku"]]],
+                "imageIndex": idx[v["sku"]],
             })
         first = p["variants"][0]
         products.append({
             "sku": first["sku"],
-            "slug": slug,
+            "slug": p["slug"],
             "name": p["name"],
             "tagline": p["tagline"],
-            "description": DESCRIPTIONS[slug],
+            "description": DESCRIPTIONS[p["slug"]],
             "priceIdr": first["price"],
             "compareAtPriceIdr": first["compare"],
-            "image": first_view_path,
+            "image": gallery[0],
             "gallery": gallery,
             "category": p["category"],
             "badges": ["Halal", "BPOM RI", "Premium"],
@@ -145,17 +164,12 @@ def build_storefront() -> dict:
 
 
 def build_bpp_catalog() -> dict:
-    """Schema consumed by apps/beli-aman-bap/catalog. Keeps the legacy field
-    shape (price_idr, compare_at_price_idr) used by the existing brands while
-    adding parent+variant images and a variants array."""
+    """Schema consumed by apps/beli-aman-bap/catalog."""
     products = []
     for p in PRODUCTS:
-        slug = p["slug"]
-        first_view_path = f"{ASSET_BASE}/{slug}-{p['parent_views'][0]}.svg"
-        gallery = [f"{ASSET_BASE}/{slug}-{v}.svg" for v in p["parent_views"]]
+        gallery, idx = _build_unified_gallery(p)
         variants = []
         for v in p["variants"]:
-            sku_lower = v["sku"].lower()
             variants.append({
                 "sku": v["sku"],
                 "label": v["size"],
@@ -164,19 +178,19 @@ def build_bpp_catalog() -> dict:
                 "compare_at_price_idr": v["compare"],
                 "weight_grams": v["weight"],
                 "stock": 200,
-                "image": f"{ASSET_BASE}/{sku_lower}.svg",
-                "gallery": [f"{ASSET_BASE}/{sku_lower}.svg", *gallery],
+                "image": gallery[idx[v["sku"]]],
+                "image_index": idx[v["sku"]],
             })
         first = p["variants"][0]
         products.append({
             "sku": first["sku"],
-            "slug": slug,
+            "slug": p["slug"],
             "name": p["name"],
             "tagline": p["tagline"],
-            "description": DESCRIPTIONS[slug],
+            "description": DESCRIPTIONS[p["slug"]],
             "price_idr": first["price"],
             "compare_at_price_idr": first["compare"],
-            "image": first_view_path,
+            "image": gallery[0],
             "gallery": gallery,
             "category": p["category"],
             "beckn_category_id": CATEGORY_BECKN[p["category"]],
@@ -206,3 +220,9 @@ if __name__ == "__main__":
     print(f"Wrote {out2}")
     print(f"Products: {len(storefront['products'])}")
     print(f"SKUs (variants): {sum(len(p['variants']) for p in storefront['products'])}")
+    # Sanity: dump kurma-sukari for visual verification
+    sukari = next(p for p in storefront["products"] if p["slug"] == "kurma-sukari")
+    print("\nkurma-sukari gallery:")
+    for i, g in enumerate(sukari["gallery"]):
+        owner = next((v["label"] for v in sukari["variants"] if v.get("imageIndex") == i), "(parent)")
+        print(f"  [{i}] {owner:<6}  {g.rsplit('/', 1)[-1]}")

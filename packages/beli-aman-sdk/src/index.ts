@@ -13,4 +13,4 @@ export type {
   BrandProductVariant,
   BrandProductOptionAxis,
 } from "./theme/tokens";
-export type { CartItemInput, BeliAmanConfig } from "./BeliAmanProvider";
+export type { CartItemInput, BeliAmanConfig, SavedAddress } from "./BeliAmanProvider";

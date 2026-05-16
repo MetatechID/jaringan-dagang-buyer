@@ -24,6 +24,7 @@ export function StepCartReview() {
     email,
     brandSlug,
     items,
+    defaultAddress,
   } = useBeliAman();
 
   const [previewLines, setPreviewLines] = useState<CartLine[]>([]);
@@ -51,6 +52,18 @@ export function StepCartReview() {
   useEffect(() => {
     setRecipientName(displayName || "");
   }, [displayName]);
+
+  // Pre-fill the address form from the user's saved Beli Aman address — same
+  // identity, same address, across every storefront in the network.
+  useEffect(() => {
+    if (!defaultAddress) return;
+    if (defaultAddress.recipient_name) setRecipientName(defaultAddress.recipient_name);
+    if (defaultAddress.phone_e164) setPhone(defaultAddress.phone_e164);
+    if (defaultAddress.line1) setLine1(defaultAddress.line1);
+    if (defaultAddress.kota) setKota(defaultAddress.kota);
+    if (defaultAddress.provinsi) setProvinsi(defaultAddress.provinsi);
+    if (defaultAddress.postal_code) setPostalCode(defaultAddress.postal_code);
+  }, [defaultAddress]);
 
   // For preview, call the public catalog endpoints to get prices/names.
   // Use the brandSlug + items from the provider state directly (these are

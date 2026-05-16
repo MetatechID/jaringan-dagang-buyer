@@ -1,9 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { BeliAmanButton, useBeliAman, type BrandTheme, type BrandProductVariant } from "@jaringan-dagang/beli-aman-sdk";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useBeliAman, type BrandTheme, type BrandProductVariant } from "@jaringan-dagang/beli-aman-sdk";
 
 import { formatIDR } from "@/lib/format";
+import { useCart } from "@/lib/cart";
 
 type Product = NonNullable<BrandTheme["sampleProducts"]>[number];
 
@@ -11,6 +13,15 @@ export function ProductDetail({ brandSlug, product }: { brandSlug: string; produ
   const { brandTheme } = useBeliAman();
 
   const hasVariants = !!product.variants && product.variants.length > 0;
+
+  // ONE unified gallery for the whole product — parent views first, then each
+  // variant's primary image. Picking a variant doesn't replace this list; it
+  // just moves the selection to the variant's slot (`imageIndex`).
+  const gallery: string[] = useMemo(() => {
+    if (product.gallery && product.gallery.length > 0) return product.gallery;
+    return product.image ? [product.image] : [];
+  }, [product.gallery, product.image]);
+
   const [selectedSku, setSelectedSku] = useState<string>(
     hasVariants ? product.variants![0].sku : product.sku,
   );
@@ -24,24 +35,35 @@ export function ProductDetail({ brandSlug, product }: { brandSlug: string; produ
   const activeCompareIdr = selectedVariant?.compareAtPriceIdr ?? product.compareAtPriceIdr;
   const activeWeightLabel = selectedVariant?.label;
 
-  const gallery = useMemo(() => {
-    if (selectedVariant?.gallery && selectedVariant.gallery.length > 0) {
-      return selectedVariant.gallery;
+  // Active image — defaults to the first parent view, then moves to the
+  // variant's slot when a size is picked.
+  const [activeIndex, setActiveIndex] = useState<number>(0);
+  useEffect(() => {
+    if (selectedVariant?.imageIndex != null && selectedVariant.imageIndex < gallery.length) {
+      setActiveIndex(selectedVariant.imageIndex);
     }
-    if (selectedVariant?.image) {
-      return [selectedVariant.image, ...(product.gallery ?? [])];
-    }
-    return product.gallery && product.gallery.length > 0 ? product.gallery : [product.image];
-  }, [selectedVariant, product.gallery, product.image]);
+  }, [selectedVariant, gallery.length]);
+  const activeImg = gallery[activeIndex] ?? gallery[0];
 
-  const [activeImg, setActiveImg] = useState<string>(gallery[0]);
+  // If the user clicks a thumbnail that belongs to a different variant, also
+  // sync the selected variant — matches what most e-commerce PDPs do.
+  const indexToVariant = useMemo(() => {
+    const m = new Map<number, BrandProductVariant>();
+    (product.variants ?? []).forEach((v) => {
+      if (v.imageIndex != null) m.set(v.imageIndex, v);
+    });
+    return m;
+  }, [product.variants]);
+
+  const handleThumbClick = (i: number) => {
+    setActiveIndex(i);
+    const v = indexToVariant.get(i);
+    if (v) setSelectedSku(v.sku);
+  };
+
   const [qty, setQty] = useState(1);
-
-  // Whenever the variant changes the gallery may shift; snap the active image
-  // to the new first frame so the user sees the selected SKU's primary photo.
-  if (gallery[0] && !gallery.includes(activeImg)) {
-    setActiveImg(gallery[0]);
-  }
+  const { add } = useCart(brandSlug);
+  const [justAdded, setJustAdded] = useState(false);
 
   const discount =
     activeCompareIdr && activeCompareIdr > activePriceIdr
@@ -89,33 +111,56 @@ export function ProductDetail({ brandSlug, product }: { brandSlug: string; produ
         </div>
         {gallery.length > 1 ? (
           <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
-            {gallery.map((g) => (
-              <button
-                key={g}
-                onClick={() => setActiveImg(g)}
-                style={{
-                  width: 64,
-                  height: 64,
-                  padding: 0,
-                  background: "var(--c-surface)",
-                  border:
-                    activeImg === g
+            {gallery.map((g, i) => {
+              const variantForSlot = indexToVariant.get(i);
+              const isActive = activeIndex === i;
+              return (
+                <button
+                  key={`${g}-${i}`}
+                  onClick={() => handleThumbClick(i)}
+                  title={variantForSlot ? `${variantForSlot.sku} · ${variantForSlot.label}` : "Parent view"}
+                  style={{
+                    width: 68,
+                    height: 68,
+                    padding: 0,
+                    background: "var(--c-surface)",
+                    border: isActive
                       ? `2px solid ${brandTheme.colors.primary}`
                       : "1px solid rgba(15, 23, 42, 0.10)",
-                  borderRadius: "var(--r-sm)",
-                  cursor: "pointer",
-                  overflow: "hidden",
-                }}
-              >
-                <img
-                  src={g}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              </button>
-            ))}
+                    borderRadius: "var(--r-sm)",
+                    cursor: "pointer",
+                    overflow: "hidden",
+                    position: "relative",
+                  }}
+                >
+                  <img
+                    src={g}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                  {variantForSlot ? (
+                    <span
+                      style={{
+                        position: "absolute",
+                        bottom: 2,
+                        right: 2,
+                        fontSize: 9,
+                        fontWeight: 700,
+                        padding: "2px 5px",
+                        borderRadius: 3,
+                        background: brandTheme.colors.primary,
+                        color: brandTheme.colors.primaryFg,
+                        letterSpacing: 0.3,
+                      }}
+                    >
+                      {variantForSlot.label}
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
           </div>
         ) : null}
       </div>
@@ -287,25 +332,41 @@ export function ProductDetail({ brandSlug, product }: { brandSlug: string; produ
           <button
             type="button"
             style={{
-              padding: "12px 18px",
+              padding: "14px 18px",
               background: brandTheme.colors.primary,
               color: brandTheme.colors.primaryFg,
               border: 0,
               borderRadius: "var(--r-md)",
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: "pointer",
               fontSize: 14,
+              letterSpacing: 0.3,
+              transition: "transform 0.08s ease",
             }}
-            onClick={() => alert("Brand's native checkout — disabled in demo")}
+            onClick={() => {
+              add(cartSku, qty);
+              setJustAdded(true);
+              setTimeout(() => setJustAdded(false), 1800);
+            }}
           >
-            {brandTheme.copy.addToCart}
+            {justAdded ? "✓ Ditambahkan ke Keranjang" : `${brandTheme.copy.addToCart} · ${formatIDR(activePriceIdr * qty)}`}
           </button>
-
-          <BeliAmanButton
-            brandSlug={brandSlug}
-            items={[{ sku: cartSku, qty }]}
-            fullWidth
-          />
+          {justAdded ? (
+            <Link
+              href={`/${brandSlug}/cart`}
+              style={{
+                display: "block",
+                textAlign: "center",
+                padding: "10px",
+                color: brandTheme.colors.primary,
+                textDecoration: "underline",
+                fontSize: 13,
+                fontWeight: 600,
+              }}
+            >
+              Lihat keranjang →
+            </Link>
+          ) : null}
         </div>
 
         <div
@@ -322,10 +383,10 @@ export function ProductDetail({ brandSlug, product }: { brandSlug: string; produ
           <span style={{ fontSize: 18 }}>🛡️</span>
           <div>
             <div style={{ fontWeight: 600, fontSize: 13, color: "var(--c-primary)" }}>
-              Dilindungi Beli Aman
+              Bayar di keranjang dengan Beli Aman
             </div>
             <div style={{ fontSize: 12, color: "var(--c-text-muted)", marginTop: 2 }}>
-              Dana ditahan di escrow sampai barang Anda terima. Otomatis dilepas D+3 atau saat Anda konfirmasi.
+              Dana ditahan di escrow sampai barang Anda terima — pilih kurir & bayar saat checkout di keranjang.
             </div>
           </div>
         </div>

@@ -36,7 +36,14 @@ export interface BrandProductVariant {
   compareAtPriceIdr?: number;
   weightGrams?: number;
   stock?: number;
+  /** Optional URL of the variant's primary image (also appears in the parent
+   *  product gallery — see `imageIndex`). */
   image?: string;
+  /** Index into the parent product's `gallery` array — when the buyer picks
+   *  this variant, the PDP just moves the gallery selection to this index. */
+  imageIndex?: number;
+  /** Deprecated: variant-specific gallery. New code should rely on a single
+   *  unified parent gallery + `imageIndex`. Kept for back-compat. */
   gallery?: string[];
 }
 
