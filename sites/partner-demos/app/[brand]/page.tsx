@@ -82,7 +82,13 @@ export default function BrandHomePage({ params }: { params: { brand: string } })
   if (isSafiya) {
     const grouped = groupByCategory(brand.sampleProducts || []);
     return (
-      <div>
+      <div className="safiya-home">
+        <style>{`
+          @media (max-width: 768px) {
+            .safiya-home section { padding-left: 12px !important; padding-right: 12px !important; }
+            .safiya-product-grid { gap: 10px !important; }
+          }
+        `}</style>
         <JsonLd
           data={[
             organizationJsonLd(brand, params.brand),
@@ -149,10 +155,11 @@ export default function BrandHomePage({ params }: { params: { brand: string } })
                   </p>
                 </div>
                 <div
+                  className="safiya-product-grid"
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-                    gap: 22,
+                    gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+                    gap: 14,
                   }}
                 >
                   {items.map((p) => (

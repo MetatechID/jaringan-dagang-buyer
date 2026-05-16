@@ -392,9 +392,89 @@ export function ProductDetail({ brandSlug, product }: { brandSlug: string; produ
         </div>
       </div>
 
+      {/* Sticky bottom add-to-cart bar — mobile only. Standard Indonesian
+          ecommerce pattern (Tokopedia/Shopee/Sayurbox). */}
+      <div
+        className="pdp-sticky-cta"
+        style={{
+          position: "fixed",
+          bottom: "calc(56px + env(safe-area-inset-bottom, 0px))",
+          left: 0,
+          right: 0,
+          zIndex: 55,
+          background: "#fff",
+          borderTop: "1px solid rgba(15,23,42,0.10)",
+          boxShadow: "0 -6px 18px rgba(15,23,42,0.08)",
+          padding: "10px 12px",
+          display: "none",
+          gap: 10,
+          alignItems: "center",
+        }}
+      >
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 11, color: "var(--c-text-muted)" }}>Total</div>
+          <div style={{ fontSize: 16, fontWeight: 800, color: brandTheme.colors.primary, whiteSpace: "nowrap" }}>
+            {formatIDR(activePriceIdr * qty)}
+          </div>
+        </div>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            border: "1px solid rgba(15,23,42,0.16)",
+            borderRadius: 8,
+            overflow: "hidden",
+          }}
+        >
+          <button
+            type="button"
+            aria-label="kurangi"
+            onClick={() => setQty((q) => Math.max(1, q - 1))}
+            style={{ width: 32, height: 36, background: "transparent", border: 0, cursor: "pointer", fontSize: 18 }}
+          >
+            −
+          </button>
+          <span style={{ width: 28, textAlign: "center", fontWeight: 700, fontSize: 13 }}>{qty}</span>
+          <button
+            type="button"
+            aria-label="tambah"
+            onClick={() => setQty((q) => q + 1)}
+            style={{ width: 32, height: 36, background: "transparent", border: 0, cursor: "pointer", fontSize: 18 }}
+          >
+            +
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            add(cartSku, qty);
+            setJustAdded(true);
+            setTimeout(() => setJustAdded(false), 1800);
+          }}
+          style={{
+            padding: "12px 16px",
+            background: justAdded ? brandTheme.colors.accent : brandTheme.colors.primary,
+            color: brandTheme.colors.primaryFg,
+            border: 0,
+            borderRadius: 10,
+            fontWeight: 800,
+            fontSize: 13,
+            cursor: "pointer",
+            letterSpacing: 0.3,
+            transition: "background 0.15s ease",
+            flexShrink: 0,
+          }}
+        >
+          {justAdded ? "✓ Ditambah" : "+ Keranjang"}
+        </button>
+      </div>
+
       <style>{`
         @media (max-width: 768px) {
-          .pdp-grid { grid-template-columns: 1fr !important; }
+          .pdp-grid { grid-template-columns: 1fr !important; gap: 18px !important; }
+          .pdp-sticky-cta { display: flex !important; }
+          /* Pad page bottom so sticky CTA + bottom nav don't cover content. */
+          .brand-main { padding-bottom: calc(64px + 76px + env(safe-area-inset-bottom, 0px)) !important; }
         }
       `}</style>
     </div>

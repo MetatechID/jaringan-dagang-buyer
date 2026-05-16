@@ -140,13 +140,14 @@ export function BrandHeader() {
       }}
     >
       <div
+        className="brand-header-row"
         style={{
           maxWidth: 1200,
           margin: "0 auto",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
-          padding: "14px 24px",
+          gap: 14,
+          padding: "10px 16px",
         }}
       >
         <Link
@@ -157,20 +158,60 @@ export function BrandHeader() {
             color: brandTheme.colors.primary,
             textDecoration: "none",
             fontSize: 18,
+            flexShrink: 0,
+            whiteSpace: "nowrap",
           }}
         >
           {brandTheme.name}
         </Link>
 
+        {/* Search — visible on every screen, takes remaining space */}
+        <form
+          role="search"
+          action={`/${brandTheme.slug}`}
+          method="GET"
+          style={{
+            flex: 1,
+            minWidth: 0,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            background: "var(--c-surface)",
+            border: "1px solid rgba(15,23,42,0.08)",
+            borderRadius: 999,
+            padding: "8px 14px",
+          }}
+        >
+          <span aria-hidden="true" style={{ fontSize: 14, color: "var(--c-text-muted)" }}>
+            🔍
+          </span>
+          <input
+            type="search"
+            name="q"
+            placeholder={isSafiya ? "Cari kurma, muesli, madu…" : "Cari produk…"}
+            aria-label="Cari produk"
+            style={{
+              flex: 1,
+              minWidth: 0,
+              background: "transparent",
+              border: 0,
+              outline: "none",
+              fontSize: 13,
+              color: "var(--c-text)",
+              fontFamily: "inherit",
+            }}
+          />
+        </form>
+
         <nav
+          className="brand-header-nav"
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 18,
+            gap: 16,
             fontSize: 13,
             color: "var(--c-text-muted)",
-            flexWrap: "wrap",
-            justifyContent: "flex-end",
+            flexShrink: 0,
           }}
         >
           {isSafiya
@@ -180,6 +221,7 @@ export function BrandHeader() {
                   <a
                     key={item.label}
                     href={item.href}
+                    className="brand-header-link"
                     style={{
                       color: isPromo ? brandTheme.colors.primary : "inherit",
                       textDecoration: "none",
@@ -193,16 +235,30 @@ export function BrandHeader() {
                 );
               })
             : (
-              <Link href={`/${brandTheme.slug}`} style={{ color: "inherit", textDecoration: "none" }}>
+              <Link
+                href={`/${brandTheme.slug}`}
+                className="brand-header-link"
+                style={{ color: "inherit", textDecoration: "none" }}
+              >
                 Shop
               </Link>
             )}
-          <Link href={`/${brandTheme.slug}/cart`} style={{ color: "inherit", textDecoration: "none", position: "relative", display: "inline-block" }}>
+          <Link
+            href={`/${brandTheme.slug}/cart`}
+            className="brand-header-cart-desktop"
+            style={{ color: "inherit", textDecoration: "none", position: "relative", display: "inline-block" }}
+          >
             🛒 Cart
             <CartBadge brandSlug={brandTheme.slug} />
           </Link>
-          <span style={{ width: 1, height: 22, background: "rgba(15,23,42,0.18)", display: "inline-block", margin: "0 4px" }} aria-hidden="true" />
-          <BeliAmanIdentityWidget variant="light" />
+          <span
+            className="brand-header-divider"
+            style={{ width: 1, height: 22, background: "rgba(15,23,42,0.18)", display: "inline-block", margin: "0 4px" }}
+            aria-hidden="true"
+          />
+          <span className="brand-header-identity">
+            <BeliAmanIdentityWidget variant="light" />
+          </span>
         </nav>
       </div>
       {isSafiya && signedIn && defaultAddress ? (
@@ -210,7 +266,7 @@ export function BrandHeader() {
           style={{
             background: "var(--c-surface)",
             borderTop: "1px solid rgba(15,23,42,0.06)",
-            padding: "8px 24px",
+            padding: "8px 16px",
             fontSize: 12,
             color: "var(--c-text-muted)",
           }}
@@ -225,6 +281,62 @@ export function BrandHeader() {
           </div>
         </div>
       ) : null}
+      {/* Mobile-only category quick-jump strip (Sayurbox / Astronauts pattern). */}
+      {isSafiya ? (
+        <div
+          className="brand-header-quickjump"
+          aria-label="Kategori cepat"
+          style={{
+            borderTop: "1px solid rgba(15,23,42,0.06)",
+            background: "var(--c-bg)",
+            padding: "8px 12px",
+            display: "none",
+            overflowX: "auto",
+            whiteSpace: "nowrap",
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "none",
+          }}
+        >
+          {SAFIYA_NAV.map((item) => {
+            const isPromo = item.href.endsWith("/promo");
+            return (
+              <a
+                key={item.label}
+                href={item.href}
+                style={{
+                  display: "inline-block",
+                  marginRight: 8,
+                  padding: "6px 14px",
+                  borderRadius: 999,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  textDecoration: "none",
+                  background: isPromo ? brandTheme.colors.primary : "var(--c-surface)",
+                  color: isPromo ? brandTheme.colors.primaryFg : "var(--c-text)",
+                  border: isPromo ? "0" : "1px solid rgba(15,23,42,0.10)",
+                  letterSpacing: 0.3,
+                }}
+              >
+                {isPromo ? `🌙 ${item.label}` : item.label}
+              </a>
+            );
+          })}
+        </div>
+      ) : null}
+      <style>{`
+        /* Hide the strip's scrollbar on mobile (already overflow-x: auto). */
+        .brand-header-quickjump::-webkit-scrollbar { display: none; }
+        @media (max-width: 768px) {
+          .brand-header-row { padding: 10px 12px !important; gap: 10px !important; }
+          .brand-header-nav .brand-header-link { display: none !important; }
+          .brand-header-cart-desktop { display: none !important; }
+          .brand-header-divider { display: none !important; }
+          .brand-header-quickjump { display: block !important; }
+        }
+        @media (min-width: 769px) {
+          .brand-header-quickjump { display: none !important; }
+        }
+      `}</style>
     </header>
   );
 }
