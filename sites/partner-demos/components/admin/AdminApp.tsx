@@ -860,9 +860,9 @@ function DomainsModal({ accent, brandSlug, onClose }: { accent: string; brandSlu
           <button onClick={onClose} style={{ background: "transparent", border: 0, color: "rgba(255,255,255,0.6)", fontSize: 20, cursor: "pointer", padding: 4 }}>×</button>
         </div>
         <p style={{ marginTop: 0, fontSize: 13, color: "rgba(255,255,255,0.65)", lineHeight: 1.6 }}>
-          Tambahkan domain seperti <code style={{ color: "#fde68a" }}>safiyafood.com</code> atau subdomain seperti
-          {" "}<code style={{ color: "#fde68a" }}>{brandSlug}.beliaman.com</code>. Setelah ditambahkan, kamu akan dapat instruksi
-          DNS untuk verifikasi (biasanya: <code style={{ color: "#fde68a" }}>CNAME → cname.vercel-dns.com</code>).
+          Tambahkan domain milikmu — misalnya <code style={{ color: "#fde68a" }}>safiyafood.com</code> atau
+          {" "}<code style={{ color: "#fde68a" }}>www.safiyafood.com</code>. Setelah ditambahkan, kamu akan dapat
+          instruksi DNS untuk verifikasi (biasanya: <code style={{ color: "#fde68a" }}>CNAME → cname.vercel-dns.com</code>).
         </p>
 
         <form onSubmit={addDomainOnSubmit} style={{ display: "flex", gap: 8, marginTop: 14 }}>
