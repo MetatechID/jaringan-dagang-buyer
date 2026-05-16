@@ -50,7 +50,13 @@ export async function POST(req: NextRequest) {
 
   try {
     const out = await chatTurn(body.conversation, fileContext);
-    return NextResponse.json(out);
+    // Use explicit JSON.stringify — NextResponse.json was leaving raw LF
+    // inside string values in some Vercel runtime configs, which broke
+    // strict JSON parsers on the client.
+    return new Response(JSON.stringify(out), {
+      status: 200,
+      headers: { "content-type": "application/json; charset=utf-8" },
+    });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || String(e) }, { status: 500 });
   }
