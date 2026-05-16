@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { resolveAdmin } from "@/lib/admin/auth";
 import { commitFiles, ensurePr, BASE_BRANCH, REPO_PATH } from "@/lib/admin/github";
 import { checkWritablePath } from "@/lib/admin/sandbox";
+import { latestDeploymentForBranch } from "@/lib/admin/vercel";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -45,9 +46,18 @@ export async function POST(req: NextRequest) {
       `Vibe-code change by ${admin.email}\n\n${body.changes.map((c) => `- ${c.path} — ${c.why ?? ""}`).join("\n")}`,
       BASE_BRANCH,
     );
-    // Vercel auto-aliases preview deploys by branch.
-    const slug = body.branch.replace(/[^a-zA-Z0-9-]/g, "-").slice(0, 50);
-    const previewUrl = `https://beli-aman-storefronts-git-${slug}-adiwangsatirtasentosa-gmailcoms-projects.vercel.app/safiyafood`;
+    // Try to resolve the actual Vercel preview URL via API. May be null
+    // immediately after commit while Vercel is still queueing the build —
+    // the client should poll /api/admin/preview?branch=... to refresh.
+    let previewUrl: string | null = null;
+    try {
+      // Give Vercel a 1.5s head-start so the deployment is registered.
+      await new Promise((r) => setTimeout(r, 1500));
+      const dep = await latestDeploymentForBranch(body.branch);
+      if (dep) previewUrl = `https://${dep.url}/safiyafood`;
+    } catch {
+      /* preview is optional; PR link is enough */
+    }
     return NextResponse.json({
       ok: true,
       branch: body.branch,

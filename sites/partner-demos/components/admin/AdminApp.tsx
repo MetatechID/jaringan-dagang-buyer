@@ -142,23 +142,27 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
       const branch = draftBranch ?? newBranchName();
       try {
         const r = await api<{
-          ok: true; branch: string; sha: string; preview_url: string;
+          ok: true; branch: string; sha: string; preview_url: string | null;
           pr: null | { number: number; url: string };
         }>("/api/admin/apply", {
           method: "POST",
           body: JSON.stringify({ branch, title, changes }),
         });
         setDraftBranch(r.branch);
-        setPreviewUrl(r.preview_url);
+        if (r.preview_url) setPreviewUrl(r.preview_url);
         setMessages((curr) => [
           ...curr,
           {
             role: "system",
-            content: `Committed ${r.sha.slice(0, 7)} to ${r.branch}. Preview building…`,
-            applied: { branch: r.branch, sha: r.sha, preview_url: r.preview_url, pr: r.pr },
+            content: r.preview_url
+              ? `Committed ${r.sha.slice(0, 7)} to ${r.branch}. Preview building…`
+              : `Committed ${r.sha.slice(0, 7)} to ${r.branch}. Vercel is queueing the build…`,
+            applied: { branch: r.branch, sha: r.sha, preview_url: r.preview_url ?? "", pr: r.pr },
             ts: Date.now(),
           },
         ]);
+        // Poll until Vercel reports READY (max ~3 min).
+        pollPreview(r.branch);
       } catch (e: any) {
         setErr(e?.message || String(e));
       } finally {
@@ -167,6 +171,24 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
     },
     [busy, draftBranch],
   );
+
+  const pollPreview = useCallback(async (branch: string) => {
+    const deadline = Date.now() + 3 * 60 * 1000;
+    while (Date.now() < deadline) {
+      try {
+        const r = await api<{ deployment: null | { url: string; ready: boolean; state: string } }>(
+          `/api/admin/preview?branch=${encodeURIComponent(branch)}`,
+        );
+        if (r.deployment) {
+          setPreviewUrl(`${r.deployment.url}/${brandSlug}`);
+          if (r.deployment.ready) return;
+        }
+      } catch {
+        /* swallow */
+      }
+      await new Promise((res) => setTimeout(res, 5000));
+    }
+  }, [brandSlug]);
 
   const publish = useCallback(async () => {
     if (!draftBranch || busy) return;
