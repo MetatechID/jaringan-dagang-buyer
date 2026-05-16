@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useBeliAman } from "@jaringan-dagang/beli-aman-sdk";
+import { getApps } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 interface ChatMessage {
@@ -69,15 +70,20 @@ const BAP_FIREBASE_CONFIG = {
 };
 
 async function getIdToken(): Promise<string | null> {
-  // Wait up to 4s for Firebase auth state to settle. Without this the first
-  // /whoami call after sign-in can fire before currentUser is populated,
-  // leading to a "no-header" reason in the auth gate.
-  const deadline = Date.now() + 4000;
+  // The Beli Aman SDK initializes Firebase as a *named* app ("beli-aman-sdk"),
+  // not the default one — so `getAuth()` with no argument silently returns
+  // a different auth instance that never has the signed-in user. Look at
+  // every initialized app and use the first one with a currentUser. Wait up
+  // to 5s for the auth state to settle.
+  const deadline = Date.now() + 5000;
   while (Date.now() < deadline) {
     try {
-      const auth = getAuth();
-      if (auth.currentUser) {
-        return await auth.currentUser.getIdToken();
+      const apps = getApps();
+      for (const app of apps) {
+        const auth = getAuth(app);
+        if (auth.currentUser) {
+          return await auth.currentUser.getIdToken();
+        }
       }
     } catch {
       /* swallow */
