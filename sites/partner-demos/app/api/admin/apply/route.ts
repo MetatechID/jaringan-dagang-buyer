@@ -1,0 +1,62 @@
+import { NextResponse, type NextRequest } from "next/server";
+
+import { resolveAdmin } from "@/lib/admin/auth";
+import { commitFiles, ensurePr, BASE_BRANCH, REPO_PATH } from "@/lib/admin/github";
+import { checkWritablePath } from "@/lib/admin/sandbox";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+interface Body {
+  branch: string;             // e.g. "vibe/2026-05-16-1730"
+  title: string;              // commit message + PR title
+  changes: { path: string; content: string; why?: string }[];
+}
+
+export async function POST(req: NextRequest) {
+  const admin = resolveAdmin(req.headers.get("authorization"));
+  if (!admin) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  let body: Body;
+  try {
+    body = (await req.json()) as Body;
+  } catch {
+    return NextResponse.json({ error: "bad json" }, { status: 400 });
+  }
+  if (!body.branch || !body.changes?.length) {
+    return NextResponse.json({ error: "missing fields" }, { status: 400 });
+  }
+  for (const c of body.changes) {
+    const check = checkWritablePath(c.path);
+    if (!check.ok) {
+      return NextResponse.json({ error: `path rejected: ${c.path} — ${check.reason}` }, { status: 400 });
+    }
+  }
+  try {
+    const sha = await commitFiles(
+      body.branch,
+      body.title,
+      body.changes,
+      { name: admin.name || admin.email.split("@")[0], email: admin.email },
+    );
+    // Open or update the PR so the user has a one-click "review on GitHub" link.
+    const pr = await ensurePr(
+      body.branch,
+      body.title,
+      `Vibe-code change by ${admin.email}\n\n${body.changes.map((c) => `- ${c.path} — ${c.why ?? ""}`).join("\n")}`,
+      BASE_BRANCH,
+    );
+    // Vercel auto-aliases preview deploys by branch.
+    const slug = body.branch.replace(/[^a-zA-Z0-9-]/g, "-").slice(0, 50);
+    const previewUrl = `https://beli-aman-storefronts-git-${slug}-adiwangsatirtasentosa-gmailcoms-projects.vercel.app/safiyafood`;
+    return NextResponse.json({
+      ok: true,
+      branch: body.branch,
+      sha,
+      repo: REPO_PATH,
+      pr: pr ? { number: pr.number, url: pr.html_url } : null,
+      preview_url: previewUrl,
+    });
+  } catch (e: any) {
+    return NextResponse.json({ error: e?.message || String(e) }, { status: 500 });
+  }
+}
