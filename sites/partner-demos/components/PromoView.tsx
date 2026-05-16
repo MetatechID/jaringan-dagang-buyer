@@ -73,7 +73,7 @@ function BundleCard({
           {bundle.badge}
         </span>
       ) : null}
-      <div>
+      <div style={{ minHeight: 96 }}>
         <span
           style={{
             fontSize: 11,
@@ -92,6 +92,7 @@ function BundleCard({
             fontWeight: 700,
             margin: "6px 0 4px",
             color: "#2A1810",
+            lineHeight: 1.2,
           }}
         >
           {bundle.title}
@@ -109,9 +110,9 @@ function BundleCard({
         />
       </div>
 
-      <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: "#3A2820" }}>{bundle.description}</p>
+      <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: "#3A2820", minHeight: 82 }}>{bundle.description}</p>
 
-      <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: "#5A4A3A", lineHeight: 1.7 }}>
+      <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: "#5A4A3A", lineHeight: 1.7, flex: 1 }}>
         {bundle.items.map((it) => (
           <li key={it.sku}>
             <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 11 }}>{it.sku}</span> × {it.qty}
@@ -119,7 +120,7 @@ function BundleCard({
         ))}
       </ul>
 
-      <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap", marginTop: "auto" }}>
         <strong style={{ fontSize: 26, fontWeight: 800, color: brandColors.primary }}>
           {formatIDR(bundle.priceIdr)}
         </strong>
