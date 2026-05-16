@@ -421,7 +421,8 @@
           "name": "size",
           "values": [
             "300g",
-            "500g"
+            "500g",
+            "1kg"
           ]
         }
       ],
@@ -457,6 +458,24 @@
           "image": "/brands/safiyafood/products/saf-mus-fs-500.svg",
           "gallery": [
             "/brands/safiyafood/products/saf-mus-fs-500.svg",
+            "/brands/safiyafood/products/muesli-fruit-seed-front.svg",
+            "/brands/safiyafood/products/muesli-fruit-seed-side.svg",
+            "/brands/safiyafood/products/muesli-fruit-seed-info.svg"
+          ]
+        },
+        {
+          "sku": "SAF-MUS-FS-1K",
+          "label": "1kg",
+          "option_values": {
+            "size": "1kg"
+          },
+          "price_idr": 165000,
+          "compare_at_price_idr": 245000,
+          "weight_grams": 1060,
+          "stock": 200,
+          "image": "/brands/safiyafood/products/saf-mus-fs-1k.svg",
+          "gallery": [
+            "/brands/safiyafood/products/saf-mus-fs-1k.svg",
             "/brands/safiyafood/products/muesli-fruit-seed-front.svg",
             "/brands/safiyafood/products/muesli-fruit-seed-side.svg",
             "/brands/safiyafood/products/muesli-fruit-seed-info.svg"
@@ -557,7 +576,8 @@
         {
           "name": "size",
           "values": [
-            "300g"
+            "300g",
+            "500g"
           ]
         }
       ],
@@ -575,6 +595,23 @@
           "image": "/brands/safiyafood/products/saf-byc-300.svg",
           "gallery": [
             "/brands/safiyafood/products/saf-byc-300.svg",
+            "/brands/safiyafood/products/berry-yogurt-cereal-front.svg",
+            "/brands/safiyafood/products/berry-yogurt-cereal-side.svg"
+          ]
+        },
+        {
+          "sku": "SAF-BYC-500",
+          "label": "500g",
+          "option_values": {
+            "size": "500g"
+          },
+          "price_idr": 119000,
+          "compare_at_price_idr": 169000,
+          "weight_grams": 540,
+          "stock": 200,
+          "image": "/brands/safiyafood/products/saf-byc-500.svg",
+          "gallery": [
+            "/brands/safiyafood/products/saf-byc-500.svg",
             "/brands/safiyafood/products/berry-yogurt-cereal-front.svg",
             "/brands/safiyafood/products/berry-yogurt-cereal-side.svg"
           ]

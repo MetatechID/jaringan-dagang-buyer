@@ -1,14 +1,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
   <rect width="800" height="800" fill="#FBF6EC"/>
-<g transform="translate(400,400)">
-  <ellipse cx="0" cy="260" rx="160" ry="20" fill="#000" opacity="0.10"/>
-  <rect x="-30" y="-300" width="60" height="60" rx="6" fill="#6B2C1A"/>
-  <path d="M -100 -240 L 100 -240 L 130 -180 L 130 240 L -130 240 L -130 -180 Z" fill="#F1E6CB" stroke="#2A1810" stroke-width="2"/>
-  <rect x="-90" y="-120" width="180" height="200" rx="8" fill="#FBF6EC"/>
-  <text x="0" y="-70" font-family="Georgia, serif" font-size="30" font-weight="700" fill="#6B2C1A" text-anchor="middle">Safiya</text>
-  <text x="0" y="-30" font-family="Georgia, serif" font-size="20" font-weight="700" fill="#6B2C1A" text-anchor="middle">VCO Coconut</text>
-  <rect x="-60" y="0" width="120" height="36" rx="18" fill="#D4A24C"/>
-  <text x="0" y="25" font-family="Inter, sans-serif" font-size="16" font-weight="700" fill="#2A1810" text-anchor="middle">250ml</text>
-  <text x="0" y="55" font-family="Inter, sans-serif" font-size="10" font-weight="600" fill="#6B2C1A" text-anchor="middle" letter-spacing="2">VCO · NATURAL</text>
+<g transform="translate(400, 400)">
+  <ellipse cx="0" cy="270.0" rx="160" ry="19" fill="#000" opacity="0.1"/>
+  <!-- Cap -->
+  <rect x="-32" y="-290.0" width="64" height="50" rx="6" fill="#6B2C1A"/>
+  <rect x="-26" y="-282.0" width="52" height="6" rx="2" fill="#2A1810" opacity="0.4"/>
+  <!-- Neck -->
+  <rect x="-22" y="-254.0" width="44" height="14" fill="#2A1810" opacity="0.18"/>
+  <!-- Bottle body -->
+  <path d="M -110 -220.0
+           L -110 200.0
+           Q -110 240.0 -70 240.0
+           L 70 240.0
+           Q 110 240.0 110 200.0
+           L 110 -220.0
+           Q 110 -240.0 70 -240.0
+           L -70 -240.0
+           Q -110 -240.0 -110 -220.0 Z"
+        fill="#F1E6CB" stroke="#2A1810" stroke-width="2"/>
+  <!-- Label -->
+  <rect x="-90" y="-160.0" width="180" height="240" rx="10" fill="#FBF6EC"/>
+  <text x="0" y="-116.0" font-family="Georgia, serif" font-size="30" font-weight="700" fill="#6B2C1A" text-anchor="middle">Safiya</text>
+  <text x="0" y="-92.0" font-family="Inter, sans-serif" font-size="11" fill="#D4A24C" text-anchor="middle" letter-spacing="2.5">PURE COCONUT OIL</text>
+  <text x="0" y="-48.0" font-family="Georgia, serif" font-size="22" font-weight="700" fill="#6B2C1A" text-anchor="middle">VCO Coconut</text>
+  <text x="0" y="-24.0" font-family="Inter, sans-serif" font-size="11" fill="#2A1810" opacity="0.6" text-anchor="middle" letter-spacing="2.5">COLD PRESSED · NATURAL</text>
+  <!-- Size pill -->
+  <rect x="-60" y="0.0" width="120" height="30" rx="15" fill="#D4A24C"/>
+  <text x="0" y="20.0" font-family="Inter, sans-serif" font-size="14" font-weight="800" fill="#FFFFFF" text-anchor="middle">250ML</text>
+  <!-- Liquid level indicator (more "filled" for bigger size) -->
+  <rect x="-100" y="160.0" width="200" height="50" fill="rgba(212,162,76,0.25)" rx="6"/>
 </g>
 </svg>

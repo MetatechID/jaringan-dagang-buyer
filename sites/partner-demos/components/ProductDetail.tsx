@@ -50,6 +50,14 @@ export function ProductDetail({ brandSlug, product }: { brandSlug: string; produ
 
   const cartSku = selectedVariant?.sku ?? product.sku;
 
+  // Parent SKU stem — strip the trailing size segment from the variant SKU.
+  // e.g. SAF-SUK-1K → SAF-SUK; SAF-MUS-FS-500 → SAF-MUS-FS.
+  const parentSkuStem = (() => {
+    const first = product.variants?.[0]?.sku ?? product.sku;
+    const parts = first.split("-");
+    return parts.length > 2 ? parts.slice(0, -1).join("-") : first;
+  })();
+
   return (
     <div
       style={{
@@ -190,8 +198,28 @@ export function ProductDetail({ brandSlug, product }: { brandSlug: string; produ
 
         {hasVariants ? (
           <div style={{ marginTop: 20 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--c-text-muted)", marginBottom: 8, letterSpacing: 0.6, textTransform: "uppercase" }}>
-              Pilih Ukuran
+            <div
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                justifyContent: "space-between",
+                marginBottom: 8,
+              }}
+            >
+              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--c-text-muted)", letterSpacing: 0.6, textTransform: "uppercase" }}>
+                Pilih Ukuran
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                  color: "var(--c-text-muted)",
+                  letterSpacing: 0.4,
+                }}
+                title="Parent SKU stem · selected child SKU"
+              >
+                {parentSkuStem} → <span style={{ color: brandTheme.colors.primary, fontWeight: 700 }}>{cartSku}</span>
+              </div>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {product.variants!.map((v) => {

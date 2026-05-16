@@ -1,20 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
   <rect width="800" height="800" fill="#FBF6EC"/>
-<g transform="translate(400,400)">
-  <ellipse cx="0" cy="240" rx="180" ry="22" fill="#000" opacity="0.10"/>
-  <rect x="-130" y="-240" width="260" height="50" rx="8" fill="#6B2C1A"/>
-  <path d="M -150 -180 Q -150 -200 -130 -200 L 130 -200 Q 150 -180 150 -180 L 150 200 Q 150 240 110 240 L -110 240 Q -150 240 -150 200 Z" fill="#9B5A1F" stroke="#2A1810" stroke-width="2"/>
-  <rect x="-110" y="-140" width="220" height="220" rx="10" fill="#FBF6EC"/>
-  <text x="0" y="-90" font-family="Georgia, serif" font-size="34" font-weight="700" fill="#6B2C1A" text-anchor="middle">Safiya</text>
-  <text x="0" y="-60" font-family="Georgia, serif" font-size="14" font-style="italic" fill="#D4A24C" text-anchor="middle">pure & raw</text>
-  <text x="0" y="-22" font-family="Georgia, serif" font-size="28" font-weight="700" fill="#6B2C1A" text-anchor="middle">Madu Baduy</text>
-  <!-- honey dripper -->
-  <g transform="translate(0,30)">
-    <rect x="-4" y="-10" width="8" height="40" rx="2" fill="#D4A24C"/>
-    <ellipse cx="0" cy="40" rx="22" ry="12" fill="#D4A24C"/>
-    <ellipse cx="0" cy="44" rx="12" ry="6" fill="#6B2C1A" opacity="0.5"/>
+<g transform="translate(400, 400)">
+  <ellipse cx="0" cy="200" rx="145" ry="17" fill="#000" opacity="0.1"/>
+  <!-- Lid -->
+  <rect x="-120" y="-250" width="240" height="60" rx="10" fill="#6B2C1A" stroke="#2A1810" stroke-width="2"/>
+  <ellipse cx="0" cy="-250" rx="120" ry="10" fill="#B8761F"/>
+  <!-- Jar body — different curve per size -->
+  <path d="M -135 -190
+           Q -135 -170 -125 -166
+           L -125 160
+           Q -125 190 -95 190
+           L 95 190
+           Q 125 190 125 160
+           L 125 -166
+           Q 135 -170 135 -190 Z"
+        fill="#9B5A1F" stroke="#2A1810" stroke-width="2"/>
+  <!-- Label sticker -->
+  <rect x="-105" y="-130" width="210" height="220" rx="10" fill="#FBF6EC"/>
+  <text x="0" y="-88" font-family="Georgia, serif" font-size="32" font-weight="700" fill="#6B2C1A" text-anchor="middle">Safiya</text>
+  <text x="0" y="-66" font-family="Georgia, serif" font-size="13" font-style="italic" fill="#D4A24C" text-anchor="middle">pure & raw</text>
+  <line x1="-50" y1="-54" x2="50" y2="-54" stroke="#D4A24C" stroke-width="1"/>
+  <text x="0" y="-20" font-family="Georgia, serif" font-size="22" font-weight="700" fill="#6B2C1A" text-anchor="middle">Madu Baduy</text>
+  <text x="0" y="4" font-family="Inter, sans-serif" font-size="11" fill="#2A1810" opacity="0.6" text-anchor="middle" letter-spacing="2">NATURAL · UNFILTERED</text>
+  <!-- Honey drips visualisation -->
+  <g transform="translate(0,34)">
+    <path d="M -30 0 Q 0 14 30 0" stroke="#D4A24C" stroke-width="3" fill="none"/>
+    <circle cx="-30" cy="2" r="3" fill="#D4A24C"/>
+    <circle cx="0" cy="14" r="3" fill="#D4A24C"/>
+    <circle cx="30" cy="2" r="3" fill="#D4A24C"/>
   </g>
-  <rect x="-80" y="170" width="160" height="38" rx="19" fill="#D4A24C"/>
-  <text x="0" y="196" font-family="Inter, sans-serif" font-size="20" font-weight="700" fill="#2A1810" text-anchor="middle">250ml</text>
+  <!-- Size badge -->
+  <rect x="-80" y="130" width="160" height="36" rx="18" fill="#D4A24C"/>
+  <text x="0" y="155" font-family="Inter, sans-serif" font-size="16" font-weight="800" fill="#FFFFFF" text-anchor="middle">250ML NETTO</text>
+
 </g>
 </svg>

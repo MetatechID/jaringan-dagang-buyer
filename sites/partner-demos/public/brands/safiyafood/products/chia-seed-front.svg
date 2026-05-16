@@ -1,14 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
   <rect width="800" height="800" fill="#FBF6EC"/>
-<g transform="translate(400,400)">
-  <rect x="-200" y="-280" width="400" height="540" rx="22" fill="#2A1810" stroke="#2A1810" stroke-width="2"/>
-  <rect x="-160" y="-220" width="320" height="180" rx="12" fill="#FBF6EC"/>
-  <text x="0" y="-160" font-family="Georgia, serif" font-size="36" font-weight="700" fill="#2A1810" text-anchor="middle">Safiya</text>
-  <text x="0" y="-126" font-family="Georgia, serif" font-size="14" font-style="italic" fill="#D4A24C" text-anchor="middle">healthy · pure · halal</text>
-  <text x="0" y="-78" font-family="Georgia, serif" font-size="26" font-weight="700" fill="#2A1810" text-anchor="middle">Chia Seed</text>
-  <g transform="translate(0,40)"><ellipse cx="-30" cy="0" rx="6" ry="4" fill="#2A1810"/><ellipse cx="-10" cy="10" rx="6" ry="4" fill="#2A1810"/><ellipse cx="10" cy="-6" rx="6" ry="4" fill="#2A1810"/><ellipse cx="30" cy="6" rx="6" ry="4" fill="#2A1810"/><ellipse cx="0" cy="-2" rx="6" ry="4" fill="#2A1810"/></g>
-  <rect x="-90" y="160" width="180" height="42" rx="21" fill="#D4A24C"/>
-  <text x="0" y="188" font-family="Inter, sans-serif" font-size="20" font-weight="700" fill="#2A1810" text-anchor="middle">250g</text>
-  <text x="0" y="230" font-family="Inter, sans-serif" font-size="10" font-weight="600" fill="#FBF6EC" text-anchor="middle" letter-spacing="3">HALAL · BPOM RI</text>
+<g transform="translate(400, 400)">
+  <ellipse cx="0" cy="244" rx="150" ry="18" fill="#000" opacity="0.1"/>
+  <rect x="-170" y="-230" width="340" height="460" rx="22" fill="#2A1810" stroke="#2A1810" stroke-width="2"/>
+  <!-- Top dark band -->
+  <rect x="-170" y="-230" width="340" height="60" rx="22" fill="#2A1810" opacity="0.22"/>
+  <!-- Label panel -->
+  <rect x="-140" y="-160" width="280" height="180" rx="12" fill="#FBF6EC"/>
+  <text x="0" y="-114" font-family="Georgia, serif" font-size="34" font-weight="700" fill="#2A1810" text-anchor="middle">Safiya</text>
+  <text x="0" y="-90" font-family="Inter, sans-serif" font-size="11" fill="#D4A24C" text-anchor="middle" letter-spacing="2.5">HEALTHY · PURE · HALAL</text>
+  <text x="0" y="-42" font-family="Georgia, serif" font-size="24" font-weight="700" fill="#2A1810" text-anchor="middle">Chia Seed</text>
+  <text x="0" y="-16" font-family="Inter, sans-serif" font-size="11" fill="#2A1810" opacity="0.6" text-anchor="middle" letter-spacing="2">PREMIUM GRADE</text>
+  <!-- Window with art -->
+  <ellipse cx="0" cy="110" rx="120" ry="60" fill="#FBF6EC" opacity="0.6"/>
+  <g transform="translate(0,90)"><g transform="translate(0,30)"><ellipse cx="-30" cy="0" rx="6" ry="4" fill="#2A1810"/><ellipse cx="-10" cy="10" rx="6" ry="4" fill="#2A1810"/><ellipse cx="10" cy="-6" rx="6" ry="4" fill="#2A1810"/><ellipse cx="30" cy="6" rx="6" ry="4" fill="#2A1810"/><ellipse cx="0" cy="-2" rx="6" ry="4" fill="#2A1810"/></g></g>
+  <!-- Size badge -->
+  <rect x="-100" y="138" width="200" height="42" rx="21" fill="#D4A24C"/>
+  <text x="0" y="165" font-family="Inter, sans-serif" font-size="18" font-weight="800" fill="#FFFFFF" text-anchor="middle">250G NETTO</text>
+  <text x="0" y="200" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="#FBF6EC" text-anchor="middle" letter-spacing="3">HALAL · BPOM RI</text>
 </g>
 </svg>

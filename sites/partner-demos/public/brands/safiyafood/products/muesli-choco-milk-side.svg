@@ -1,22 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
   <rect width="800" height="800" fill="#F3E7CF"/>
-<g transform="translate(400,400)">
-  <path d="M -200 -260 Q -200 -300 -160 -300 L 160 -300 Q 200 -300 200 -260 L 200 260 Q 200 300 160 300 L -160 300 Q -200 300 -200 260 Z" fill="#3A1B0E" stroke="#2A1810" stroke-width="2"/>
-  <path d="M -200 -260 Q -200 -300 -160 -300 L 160 -300 Q 200 -300 200 -260 L 200 -180 L -200 -180 Z" fill="#2A1810" opacity="0.2"/>
-  <rect x="-160" y="-140" width="320" height="160" rx="10" fill="#FBF6EC"/>
-  <text x="0" y="-90" font-family="Georgia, serif" font-size="32" font-weight="700" fill="#3A1B0E" text-anchor="middle">Safiya</text>
-  <text x="0" y="-58" font-family="Georgia, serif" font-size="14" font-style="italic" fill="#D4A24C" text-anchor="middle">healthy · tasty · authentic</text>
-  <text x="0" y="-20" font-family="Georgia, serif" font-size="26" font-weight="700" fill="#3A1B0E" text-anchor="middle">Muesli Choco Milk</text>
-  <g transform="translate(0,90)">
-
+<g transform="translate(400,420)">
+  <ellipse cx="0" cy="256" rx="170" ry="20" fill="#000" opacity="0.1"/>
+  <!-- Pouch shape -->
+  <path d="M -180 -210
+           Q -180 -240 -150 -240
+           L 150 -240
+           Q 180 -240 180 -210
+           L 180 220
+           Q 180 240 150 240
+           L -150 240
+           Q -180 240 -180 220 Z"
+        fill="#3A1B0E" stroke="#2A1810" stroke-width="2"/>
+  <!-- Top seal -->
+  <rect x="-180" y="-240" width="360" height="38" fill="#2A1810" opacity="0.25"/>
+  <line x1="-168" y1="-222" x2="168" y2="-222" stroke="#FBF6EC" stroke-width="1" stroke-dasharray="6 4"/>
+  <!-- Label panel -->
+  <rect x="-150" y="-170" width="300" height="180" rx="10" fill="#FBF6EC"/>
+  <text x="0" y="-122" font-family="Georgia, serif" font-size="34" font-weight="700" fill="#3A1B0E" text-anchor="middle">Safiya</text>
+  <text x="0" y="-96" font-family="Georgia, serif" font-size="13" font-style="italic" fill="#D4A24C" text-anchor="middle">healthy · tasty · authentic</text>
+  <text x="0" y="-54" font-family="Georgia, serif" font-size="22" font-weight="700" fill="#3A1B0E" text-anchor="middle">Muesli Choco Milk</text>
+  <text x="0" y="-28" font-family="Inter, sans-serif" font-size="11" fill="#2A1810" opacity="0.6" text-anchor="middle" letter-spacing="2">HIGH FIBER · HALAL</text>
+  <!-- Art -->
+  <g transform="translate(0,100)">
     <rect x="-60" y="-10" width="40" height="50" rx="4" fill="#3B1F12"/>
     <rect x="-12" y="-4" width="40" height="44" rx="4" fill="#5C3A20"/>
     <rect x="34" y="0" width="36" height="40" rx="4" fill="#3B1F12"/>
-    <ellipse cx="-12" cy="50" rx="80" ry="8" fill="#2A1810" opacity="0.18"/>
-
+    <ellipse cx="0" cy="50" rx="80" ry="8" fill="#2A1810" opacity="0.18"/>
   </g>
-  <rect x="-70" y="190" width="140" height="38" rx="19" fill="#D4A24C"/>
-  <text x="0" y="216" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#2A1810" text-anchor="middle">300g</text>
-  <text x="0" y="260" font-family="Inter, sans-serif" font-size="10" font-weight="600" fill="#FBF6EC" text-anchor="middle" letter-spacing="3">HALAL · BPOM RI</text>
+
+  <!-- Size badge -->
+  <rect x="-90" y="150" width="180" height="40" rx="20" fill="#D4A24C"/>
+  <text x="0" y="177" font-family="Inter, sans-serif" font-size="18" font-weight="800" fill="#FFFFFF" text-anchor="middle">300G NETTO</text>
+  <text x="0" y="210" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="#FBF6EC" text-anchor="middle" letter-spacing="3">HALAL · BPOM RI</text>
 </g>
 </svg>
