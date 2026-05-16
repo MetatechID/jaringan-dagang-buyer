@@ -116,7 +116,8 @@ function newBranchName(): string {
   return `vibe/${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}-${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}`;
 }
 
-const CHAT_LS_KEY = (slug: string) => `vibe-chat:${slug}`;
+const CHAT_LS_KEY = (slug: string, branch: string | null) =>
+  `vibe-chat:${slug}:${branch ?? "_no-draft"}`;
 const WELCOME_MSG = (brandName: string): ChatMessage => ({
   role: "assistant",
   content: `Halo! Saya editor vibe untuk ${brandName}. Bilang aja apa yang mau diubah — warna brand, hero, tambah produk, pasang Google Analytics — dan saya bikinin preview deploynya.`,
@@ -153,6 +154,7 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
   const [compareSel, setCompareSel] = useState<string[]>([]);
   const [compareResult, setCompareResult] = useState<CompareResult | null>(null);
   const [domainsOpen, setDomainsOpen] = useState(false);
+  const [branchHistory, setBranchHistory] = useState<{ sha: string; message: string; date: string; author: string; vibe_by: string | null }[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const refreshDrafts = useCallback(() => {
@@ -181,29 +183,34 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages.length, busy]);
 
-  // Hydrate messages from localStorage on mount (post-hydration so we don't
-  // race React's reconciliation). The default WELCOME_MSG handles SSR.
+  // Hydrate messages from localStorage whenever the active draft changes —
+  // so each branch carries its own conversation. Switching drafts swaps the
+  // chat thread the way switching threads in a chat app does.
   const hydratedRef = useRef(false);
   useEffect(() => {
-    if (hydratedRef.current) return;
-    hydratedRef.current = true;
     try {
-      const raw = window.localStorage.getItem(CHAT_LS_KEY(brandSlug));
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as ChatMessage[];
-      if (Array.isArray(parsed) && parsed.length > 0) setMessages(parsed);
+      const raw = window.localStorage.getItem(CHAT_LS_KEY(brandSlug, draftBranch));
+      if (raw) {
+        const parsed = JSON.parse(raw) as ChatMessage[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+          hydratedRef.current = true;
+          return;
+        }
+      }
     } catch {/* quota or private-mode — non-fatal */}
-  }, [brandSlug]);
+    setMessages([WELCOME_MSG(brandSlug)]);
+    hydratedRef.current = true;
+  }, [brandSlug, draftBranch]);
 
-  // Persist chat history per tenant (cap last 100 turns). Skip the first
-  // render so we don't clobber a richer history with the default welcome.
+  // Persist chat history per (tenant, branch). Cap last 100 turns.
   useEffect(() => {
     if (!hydratedRef.current) return;
     try {
       const trimmed = messages.length > 100 ? messages.slice(-100) : messages;
-      window.localStorage.setItem(CHAT_LS_KEY(brandSlug), JSON.stringify(trimmed));
+      window.localStorage.setItem(CHAT_LS_KEY(brandSlug, draftBranch), JSON.stringify(trimmed));
     } catch {/* quota or private-mode — non-fatal */}
-  }, [messages, brandSlug]);
+  }, [messages, brandSlug, draftBranch]);
 
   // Mirror the active draft to ?draft=BRANCH so the marketing team can refresh
   // or share the URL and land back on the same preview.
@@ -214,6 +221,21 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
     else u.searchParams.delete("draft");
     window.history.replaceState(null, "", u.toString());
   }, [draftBranch]);
+
+  // Load the commit history for the active branch — these are the "vibe
+  // turns" that have already shipped to this draft. Refreshed when a new
+  // commit is applied so the list stays in sync.
+  useEffect(() => {
+    if (!signedIn || !draftBranch) {
+      setBranchHistory([]);
+      return;
+    }
+    api<{ commits: { sha: string; message: string; date: string; author: string; vibe_by: string | null }[] }>(
+      `/api/admin/branch-history?branch=${encodeURIComponent(draftBranch)}`,
+    )
+      .then((r) => setBranchHistory(r.commits))
+      .catch(() => setBranchHistory([]));
+  }, [signedIn, draftBranch, messages.length]);
 
   // pollPreview + applyChanges are declared BEFORE send so send can call
   // applyChanges directly (auto-apply on chat reply).
@@ -741,11 +763,11 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
                   <div style={{ display: "flex", gap: 10, marginTop: 6, fontSize: 11 }} onClick={(e) => e.stopPropagation()}>
                     {d.preview_url ? (
                       <>
-                        <a href={d.preview_url} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: "underline" }}>Preview ↗</a>
+                        <a href={d.preview_url} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: "underline" }}>Preview</a>
                         <button
                           onClick={() => {
                             navigator.clipboard.writeText(d.preview_url!);
-                            setMessages((curr) => [...curr, { role: "system", content: `🔗 Preview link disalin: ${d.preview_url}`, ts: Date.now() }]);
+                            setMessages((curr) => [...curr, { role: "system", content: `Preview link disalin: ${d.preview_url}`, ts: Date.now() }]);
                           }}
                           style={{ background: "transparent", border: 0, color: accent, cursor: "pointer", textDecoration: "underline", padding: 0, fontSize: 11 }}
                           title="Copy preview link"
@@ -762,6 +784,25 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
                       Discard
                     </button>
                   </div>
+                  {active && branchHistory.length > 0 ? (
+                    <div style={{ marginTop: 10, paddingTop: 8, borderTop: "1px dashed rgba(251,191,36,0.2)" }} onClick={(e) => e.stopPropagation()}>
+                      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.2, color: "rgba(251,191,36,0.7)", textTransform: "uppercase", marginBottom: 6 }}>
+                        Riwayat draft · {branchHistory.length} commit
+                      </div>
+                      {branchHistory.map((c) => (
+                        <div key={c.sha} style={{ marginBottom: 6, paddingLeft: 8, borderLeft: "2px solid rgba(251,191,36,0.3)" }}>
+                          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.85)", lineHeight: 1.35 }}>
+                            {c.message.split("\n")[0]}
+                          </div>
+                          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginTop: 1, display: "flex", gap: 6, fontFamily: "ui-monospace, monospace" }}>
+                            <span>{c.sha.slice(0, 7)}</span>
+                            <span>·</span>
+                            <span>{new Date(c.date).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               );
             })}
