@@ -44,6 +44,8 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Startup / shutdown hooks."""
+    import asyncio
+    import os
     logging.basicConfig(
         level=logging.DEBUG if settings.debug else logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
@@ -60,8 +62,20 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     except Exception:
         logger.warning("Could not connect to database (skipping table creation)", exc_info=True)
 
+    # Start background workers (unless explicitly disabled, e.g. on Vercel serverless).
+    puller_task = None
+    if os.environ.get("BECKN_WORKERS_ENABLED", "true").lower() != "false":
+        try:
+            from workers.catalog_puller import run_forever as catalog_puller_loop
+            puller_task = asyncio.create_task(catalog_puller_loop())
+            logger.info("catalog_puller worker started")
+        except Exception:
+            logger.exception("catalog_puller failed to start")
+
     yield
 
+    if puller_task is not None:
+        puller_task.cancel()
     try:
         await engine.dispose()
     except Exception:
