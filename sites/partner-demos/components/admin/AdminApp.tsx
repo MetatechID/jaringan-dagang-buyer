@@ -25,15 +25,40 @@ interface CommitWithFunnel {
   authorName: string;
   date: string;
   url: string;
-  funnel: null | {
+  funnel: null | FunnelStats;
+}
+
+interface FunnelStats {
+  sessions: number;
+  product_viewers: number;
+  carters: number;
+  checkouts: number;
+  atc_rate: number;
+  checkout_rate: number;
+  atc_to_checkout_rate: number;
+}
+
+interface DraftBranchEntry {
+  branch: string;
+  pr_number: number | null;
+  pr_url: string | null;
+  pr_title: string | null;
+  head_sha: string;
+  last_commit_message: string;
+  last_commit_date: string;
+  preview_url: string | null;
+}
+
+interface CompareResult {
+  a: { sha: string; funnel: FunnelStats | null };
+  b: { sha: string; funnel: FunnelStats | null };
+  delta: null | {
     sessions: number;
-    product_viewers: number;
-    carters: number;
-    checkouts: number;
-    atc_rate: number;
-    checkout_rate: number;
-    atc_to_checkout_rate: number;
+    atc_rate_pp: number;
+    checkout_rate_pp: number;
+    atc_to_checkout_rate_pp: number;
   };
+  days: number;
 }
 
 const BAP_FIREBASE_CONFIG = {
@@ -101,13 +126,22 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
   const [draftBranch, setDraftBranch] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [commits, setCommits] = useState<CommitWithFunnel[]>([]);
+  const [drafts, setDrafts] = useState<DraftBranchEntry[]>([]);
   const [whoami, setWhoami] = useState<null | {
     ok: boolean;
     reason: string | null;
     seen_email: string | null;
     allowlist: string[] | null;
   }>(null);
+  const [compareSel, setCompareSel] = useState<string[]>([]);
+  const [compareResult, setCompareResult] = useState<CompareResult | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const refreshDrafts = useCallback(() => {
+    api<{ drafts: DraftBranchEntry[] }>("/api/admin/drafts")
+      .then((r) => setDrafts(r.drafts))
+      .catch(() => {/* drafts optional */});
+  }, []);
 
   // Once signed in, fetch /whoami so we can show exactly what the server saw
   // — and only then try to load /history.
@@ -119,10 +153,11 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
       .then((w) => {
         setWhoami(w);
         if (!w.ok) return;
-        return api<{ commits: CommitWithFunnel[] }>("/api/admin/history").then((r) => setCommits(r.commits));
+        api<{ commits: CommitWithFunnel[] }>("/api/admin/history").then((r) => setCommits(r.commits));
+        refreshDrafts();
       })
       .catch((e) => setErr(String(e)));
-  }, [signedIn]);
+  }, [signedIn, refreshDrafts]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -236,6 +271,52 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
       setBusy(null);
     }
   }, [busy, draftBranch]);
+
+  const discardDraft = useCallback(
+    async (branch: string) => {
+      if (busy) return;
+      if (!confirm(`Discard draft branch ${branch}? Will close the PR and delete the branch.`)) return;
+      setBusy("revert");
+      setErr(null);
+      try {
+        await api(`/api/admin/drafts?branch=${encodeURIComponent(branch)}`, { method: "DELETE" });
+        setMessages((curr) => [...curr, { role: "system", content: `🗑 Discarded draft ${branch}.`, ts: Date.now() }]);
+        if (draftBranch === branch) {
+          setDraftBranch(null);
+          setPreviewUrl(null);
+        }
+        refreshDrafts();
+      } catch (e: any) {
+        setErr(e?.message || String(e));
+      } finally {
+        setBusy(null);
+      }
+    },
+    [busy, draftBranch, refreshDrafts],
+  );
+
+  const toggleCompareSel = useCallback(
+    (sha: string) => {
+      setCompareSel((curr) => {
+        if (curr.includes(sha)) return curr.filter((s) => s !== sha);
+        if (curr.length >= 2) return [curr[1], sha];
+        return [...curr, sha];
+      });
+      setCompareResult(null);
+    },
+    [],
+  );
+
+  const runCompare = useCallback(async () => {
+    if (compareSel.length !== 2 || busy) return;
+    setErr(null);
+    try {
+      const r = await api<CompareResult>(`/api/admin/compare?a=${compareSel[0]}&b=${compareSel[1]}&days=30`);
+      setCompareResult(r);
+    } catch (e: any) {
+      setErr(e?.message || String(e));
+    }
+  }, [busy, compareSel]);
 
   const revert = useCallback(
     async (sha: string) => {
@@ -408,49 +489,111 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
         </div>
       </div>
 
-      {/* ---- Right: version history ---- */}
+      {/* ---- Right: drafts + version history ---- */}
       <div style={{ borderLeft: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", minHeight: 0 }}>
+        {drafts.length > 0 ? (
+          <div style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", padding: "12px 16px", maxHeight: "32%", overflowY: "auto" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.4, color: "#fbbf24", textTransform: "uppercase", marginBottom: 8 }}>
+              Draft Aktif · {drafts.length}
+            </div>
+            {drafts.map((d) => (
+              <div key={d.branch} style={{ marginBottom: 8, padding: 8, background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.24)", borderRadius: 8 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#fde68a", fontFamily: "ui-monospace, monospace", wordBreak: "break-all" }}>{d.branch}</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 2, lineHeight: 1.35 }}>
+                  {d.last_commit_message || "(empty)"}
+                </div>
+                <div style={{ display: "flex", gap: 10, marginTop: 6, fontSize: 11 }}>
+                  {d.preview_url ? (
+                    <a href={d.preview_url} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: "underline" }}>Preview ↗</a>
+                  ) : null}
+                  {d.pr_url ? (
+                    <a href={d.pr_url} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: "underline" }}>PR #{d.pr_number} ↗</a>
+                  ) : null}
+                  <button
+                    onClick={() => discardDraft(d.branch)}
+                    disabled={busy === "revert"}
+                    style={{ background: "transparent", border: 0, color: "#fca5a5", cursor: "pointer", textDecoration: "underline", padding: 0, fontSize: 11 }}
+                  >
+                    Discard
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
         <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.4, color: accent, textTransform: "uppercase" }}>
-            Versi Production
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.4, color: accent, textTransform: "uppercase" }}>
+              Versi Production
+            </div>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}>
+              {compareSel.length === 0 ? "Klik 2 versi untuk bandingkan" : `${compareSel.length}/2 dipilih`}
+            </div>
           </div>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>
-            Setiap commit = satu versi yang bisa kamu rollback ke. Funnel = real traffic 14 hari.
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>
+            Setiap commit = satu versi yang bisa di-rollback. Funnel = real traffic 30 hari.
           </div>
+          {compareSel.length === 2 ? (
+            <button
+              onClick={runCompare}
+              style={{ marginTop: 8, padding: "6px 12px", background: accent, color: "#fff", border: 0, borderRadius: 999, fontWeight: 700, fontSize: 11, cursor: "pointer" }}
+            >
+              Bandingkan {compareSel[0].slice(0, 7)} ↔ {compareSel[1].slice(0, 7)}
+            </button>
+          ) : null}
+          {compareResult ? <CompareSummary res={compareResult} onClose={() => { setCompareResult(null); setCompareSel([]); }} /> : null}
         </div>
         <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
           {commits.length === 0 ? (
             <div style={{ padding: 16, fontSize: 12, color: "rgba(255,255,255,0.4)" }}>Loading…</div>
           ) : null}
-          {commits.map((c) => (
-            <div key={c.sha} style={{ padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-              <div style={{ fontSize: 12, color: "#fff", fontWeight: 600, lineHeight: 1.35 }}>{c.message}</div>
-              <div style={{ marginTop: 4, fontSize: 11, color: "rgba(255,255,255,0.45)", display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-                <span style={{ fontFamily: "ui-monospace, monospace" }}>{c.sha.slice(0, 7)}</span>
-                <span>·</span>
-                <span>{c.authorName}</span>
-                <span>·</span>
-                <span>{new Date(c.date).toLocaleString("id-ID")}</span>
-              </div>
-              {c.funnel ? (
-                <div style={{ marginTop: 8, padding: "8px 10px", background: "rgba(255,255,255,0.04)", borderRadius: 6, fontSize: 11, lineHeight: 1.6, color: "#cbd5e1" }}>
-                  <div>👀 {c.funnel.sessions} sesi · 🛒 {(c.funnel.atc_rate * 100).toFixed(1)}% ATC · 💳 {(c.funnel.checkout_rate * 100).toFixed(1)}% checkout</div>
+          {commits.map((c) => {
+            const selected = compareSel.includes(c.sha);
+            return (
+              <div
+                key={c.sha}
+                style={{
+                  padding: "12px 16px",
+                  borderBottom: "1px solid rgba(255,255,255,0.06)",
+                  background: selected ? "rgba(212,162,76,0.08)" : "transparent",
+                  borderLeft: selected ? `3px solid ${accent}` : "3px solid transparent",
+                }}
+              >
+                <div style={{ fontSize: 12, color: "#fff", fontWeight: 600, lineHeight: 1.35 }}>{c.message}</div>
+                <div style={{ marginTop: 4, fontSize: 11, color: "rgba(255,255,255,0.45)", display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                  <span style={{ fontFamily: "ui-monospace, monospace" }}>{c.sha.slice(0, 7)}</span>
+                  <span>·</span>
+                  <span>{c.authorName}</span>
+                  <span>·</span>
+                  <span>{new Date(c.date).toLocaleString("id-ID")}</span>
                 </div>
-              ) : (
-                <div style={{ marginTop: 8, fontSize: 11, color: "rgba(255,255,255,0.3)" }}>Belum ada traffic untuk versi ini.</div>
-              )}
-              <div style={{ marginTop: 8, display: "flex", gap: 10, fontSize: 11 }}>
-                <a href={c.url} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: "underline" }}>GitHub ↗</a>
-                <button
-                  onClick={() => revert(c.sha)}
-                  disabled={busy === "revert"}
-                  style={{ background: "transparent", border: 0, color: "#fca5a5", cursor: "pointer", textDecoration: "underline", padding: 0, fontSize: 11 }}
-                >
-                  Revert ke versi sebelumnya
-                </button>
+                {c.funnel ? (
+                  <div style={{ marginTop: 8, padding: "8px 10px", background: "rgba(255,255,255,0.04)", borderRadius: 6, fontSize: 11, lineHeight: 1.6, color: "#cbd5e1" }}>
+                    <div>👀 {c.funnel.sessions} sesi · 🛒 {(c.funnel.atc_rate * 100).toFixed(1)}% ATC · 💳 {(c.funnel.checkout_rate * 100).toFixed(1)}% checkout</div>
+                  </div>
+                ) : (
+                  <div style={{ marginTop: 8, fontSize: 11, color: "rgba(255,255,255,0.3)" }}>Belum ada traffic untuk versi ini.</div>
+                )}
+                <div style={{ marginTop: 8, display: "flex", gap: 10, fontSize: 11, flexWrap: "wrap" }}>
+                  <a href={c.url} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: "underline" }}>GitHub ↗</a>
+                  <button
+                    onClick={() => toggleCompareSel(c.sha)}
+                    style={{ background: "transparent", border: 0, color: selected ? "#fde68a" : "rgba(255,255,255,0.55)", cursor: "pointer", textDecoration: "underline", padding: 0, fontSize: 11 }}
+                  >
+                    {selected ? "✓ Pilih untuk bandingkan" : "Pilih untuk bandingkan"}
+                  </button>
+                  <button
+                    onClick={() => revert(c.sha)}
+                    disabled={busy === "revert"}
+                    style={{ background: "transparent", border: 0, color: "#fca5a5", cursor: "pointer", textDecoration: "underline", padding: 0, fontSize: 11 }}
+                  >
+                    Revert
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
       <style>{`
@@ -542,6 +685,54 @@ function ChatBubble({
           ) : null}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function CompareSummary({ res, onClose }: { res: CompareResult; onClose: () => void }) {
+  const fmtPct = (v?: number) => (v == null ? "—" : `${(v * 100).toFixed(1)}%`);
+  const fmtPP = (v?: number) => {
+    if (v == null) return "—";
+    const sign = v > 0 ? "+" : v < 0 ? "" : "±";
+    return `${sign}${v.toFixed(1)}pp`;
+  };
+  const color = (v?: number) => (v == null ? "#94a3b8" : v > 0 ? "#86efac" : v < 0 ? "#fca5a5" : "#cbd5e1");
+  const a = res.a.funnel;
+  const b = res.b.funnel;
+  return (
+    <div style={{ marginTop: 10, padding: 10, background: "rgba(15,118,110,0.10)", border: "1px solid rgba(15,118,110,0.40)", borderRadius: 8, fontSize: 11, color: "#cbd5e1" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+        <div style={{ fontWeight: 700, color: "#86efac", textTransform: "uppercase", letterSpacing: 1.4, fontSize: 10 }}>
+          A {res.a.sha.slice(0, 7)} ↔ B {res.b.sha.slice(0, 7)} · {res.days}d
+        </div>
+        <button onClick={onClose} style={{ background: "transparent", border: 0, color: "rgba(255,255,255,0.5)", cursor: "pointer", fontSize: 11 }}>×</button>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4, lineHeight: 1.7 }}>
+        <div></div>
+        <div style={{ color: "#fff", fontWeight: 700 }}>A</div>
+        <div style={{ color: "#fff", fontWeight: 700 }}>B</div>
+        <div style={{ color: "rgba(255,255,255,0.6)" }}>sesi</div>
+        <div>{a?.sessions ?? "—"}</div>
+        <div>{b?.sessions ?? "—"}</div>
+        <div style={{ color: "rgba(255,255,255,0.6)" }}>ATC%</div>
+        <div>{fmtPct(a?.atc_rate)}</div>
+        <div>{fmtPct(b?.atc_rate)}</div>
+        <div style={{ color: "rgba(255,255,255,0.6)" }}>Checkout%</div>
+        <div>{fmtPct(a?.checkout_rate)}</div>
+        <div>{fmtPct(b?.checkout_rate)}</div>
+      </div>
+      {res.delta ? (
+        <div style={{ marginTop: 6, paddingTop: 6, borderTop: "1px dashed rgba(255,255,255,0.16)", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+          <div style={{ color: "rgba(255,255,255,0.6)" }}>ΔATC</div>
+          <div style={{ color: color(res.delta.atc_rate_pp), fontWeight: 700 }}>{fmtPP(res.delta.atc_rate_pp)}</div>
+          <div style={{ color: "rgba(255,255,255,0.6)" }}>ΔCheckout</div>
+          <div style={{ color: color(res.delta.checkout_rate_pp), fontWeight: 700 }}>{fmtPP(res.delta.checkout_rate_pp)}</div>
+        </div>
+      ) : (
+        <div style={{ marginTop: 6, color: "rgba(255,255,255,0.45)" }}>
+          Tidak ada traffic untuk salah satu / kedua versi — coba pilih commit yang sudah lebih lama hidup di production.
+        </div>
+      )}
     </div>
   );
 }

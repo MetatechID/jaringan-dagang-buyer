@@ -189,6 +189,71 @@ export async function listCommits(branch = DEFAULT_BRANCH, perPage = 20): Promis
   }));
 }
 
+export interface DraftBranch {
+  branch: string;
+  pr_number: number | null;
+  pr_url: string | null;
+  pr_title: string | null;
+  head_sha: string;
+  last_commit_message: string;
+  last_commit_date: string;
+}
+
+/** List open `vibe/*` branches with their PR (if any). */
+export async function listDraftBranches(prefix = "vibe/"): Promise<DraftBranch[]> {
+  // 1. Pull all branches via the heads ref API.
+  const refs = await gh<any[]>(`/repos/${REPO}/git/matching-refs/heads/${prefix}`);
+  // 2. Pull open PRs once and index by head ref.
+  const prs = await gh<any[]>(`/repos/${REPO}/pulls?state=open&per_page=50`);
+  const prByBranch = new Map<string, any>(prs.map((p) => [p.head.ref, p]));
+
+  const out: DraftBranch[] = [];
+  await Promise.all(
+    refs.map(async (r) => {
+      const branch = r.ref.replace(/^refs\/heads\//, "");
+      const headSha = r.object.sha;
+      let commit: any = null;
+      try {
+        commit = await gh(`/repos/${REPO}/commits/${headSha}`);
+      } catch {
+        /* skip stale ref */
+      }
+      const pr = prByBranch.get(branch);
+      out.push({
+        branch,
+        pr_number: pr?.number ?? null,
+        pr_url: pr?.html_url ?? null,
+        pr_title: pr?.title ?? null,
+        head_sha: headSha,
+        last_commit_message: (commit?.commit?.message ?? "").split("\n")[0],
+        last_commit_date: commit?.commit?.author?.date ?? "",
+      });
+    }),
+  );
+  out.sort((a, b) => b.last_commit_date.localeCompare(a.last_commit_date));
+  return out;
+}
+
+/** Close the PR + delete the draft branch. */
+export async function discardDraft(branch: string): Promise<void> {
+  // Close any open PR first.
+  try {
+    const owner = REPO.split("/")[0];
+    const prs = await gh<any[]>(
+      `/repos/${REPO}/pulls?state=open&head=${encodeURIComponent(owner + ":" + branch)}`,
+    );
+    for (const pr of prs) {
+      await gh(`/repos/${REPO}/pulls/${pr.number}`, {
+        method: "PATCH",
+        body: JSON.stringify({ state: "closed" }),
+      });
+    }
+  } catch {
+    /* close errors aren't fatal — branch delete is the real action */
+  }
+  await gh(`/repos/${REPO}/git/refs/heads/${encodeURIComponent(branch)}`, { method: "DELETE" });
+}
+
 /** Revert a commit on `branch` by creating a revert commit. We do it manually
  *  via the contents API since GitHub doesn't expose a one-call revert. */
 export async function revertCommit(
