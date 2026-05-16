@@ -327,18 +327,37 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
   const revert = useCallback(
     async (sha: string) => {
       if (busy) return;
-      if (!confirm(`Revert commit ${sha.slice(0, 7)} on production?`)) return;
+      if (!confirm(`Buat draft revert untuk ${sha.slice(0, 7)}? Kamu bisa preview dulu sebelum publish.`)) return;
       setBusy("revert");
       setErr(null);
       try {
-        const r = await api<{ ok: true; revert_sha: string }>("/api/admin/revert", {
+        const r = await api<{
+          ok: true;
+          branch: string;
+          revert_sha: string;
+          reverted_sha: string;
+          pr: null | { number: number; url: string };
+          preview_url: string | null;
+        }>("/api/admin/revert", {
           method: "POST",
           body: JSON.stringify({ sha }),
         });
+        // Switch the preview iframe to the revert branch and surface a chat
+        // message with the PR link. The user can then click "Publish ke main"
+        // when they've confirmed the preview looks right.
+        setDraftBranch(r.branch);
+        if (r.preview_url) setPreviewUrl(r.preview_url);
         setMessages((curr) => [
           ...curr,
-          { role: "system", content: `↩ Reverted ${sha.slice(0, 7)} → new commit ${r.revert_sha.slice(0, 7)}.`, ts: Date.now() },
+          {
+            role: "system",
+            content: `↩ Draft revert siap di ${r.branch} (sha ${r.revert_sha.slice(0, 7)}). Preview building — review dulu, lalu klik Publish ke main.`,
+            applied: { branch: r.branch, sha: r.revert_sha, preview_url: r.preview_url ?? "", pr: r.pr },
+            ts: Date.now(),
+          },
         ]);
+        pollPreview(r.branch);
+        refreshDrafts();
         api<{ commits: CommitWithFunnel[] }>("/api/admin/history").then((r2) => setCommits(r2.commits));
       } catch (e: any) {
         setErr(e?.message || String(e));
@@ -346,7 +365,7 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
         setBusy(null);
       }
     },
-    [busy],
+    [busy, pollPreview, refreshDrafts],
   );
 
   if (!signedIn) {
@@ -499,8 +518,25 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
       <div style={{ borderLeft: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", minHeight: 0 }}>
         {drafts.length > 0 ? (
           <div style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", padding: "12px 16px", maxHeight: "32%", overflowY: "auto" }}>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.4, color: "#fbbf24", textTransform: "uppercase", marginBottom: 8 }}>
-              Draft Aktif · {drafts.length}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.4, color: "#fbbf24", textTransform: "uppercase" }}>
+                Draft Aktif · {drafts.length}
+              </div>
+              <button
+                onClick={async () => {
+                  if (!confirm(`Discard semua draft yang umur >14 hari?`)) return;
+                  try {
+                    const r = await api<{ pruned: string[]; total: number }>("/api/admin/drafts/prune?days=14", { method: "POST" });
+                    setMessages((curr) => [...curr, { role: "system", content: `🗑 Pruned ${r.pruned.length} stale draft(s) (umur >14 hari).`, ts: Date.now() }]);
+                    refreshDrafts();
+                  } catch (e: any) {
+                    setErr(String(e));
+                  }
+                }}
+                style={{ background: "transparent", border: 0, color: "#fca5a5", cursor: "pointer", textDecoration: "underline", padding: 0, fontSize: 10 }}
+              >
+                Prune {">"} 14d
+              </button>
             </div>
             {drafts.map((d) => (
               <div key={d.branch} style={{ marginBottom: 8, padding: 8, background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.24)", borderRadius: 8 }}>
