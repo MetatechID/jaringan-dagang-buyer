@@ -44,12 +44,22 @@ const BAP_FIREBASE_CONFIG = {
 };
 
 async function getIdToken(): Promise<string | null> {
-  try {
-    const auth = getAuth();
-    return (await auth.currentUser?.getIdToken()) ?? null;
-  } catch {
-    return null;
+  // Wait up to 4s for Firebase auth state to settle. Without this the first
+  // /whoami call after sign-in can fire before currentUser is populated,
+  // leading to a "no-header" reason in the auth gate.
+  const deadline = Date.now() + 4000;
+  while (Date.now() < deadline) {
+    try {
+      const auth = getAuth();
+      if (auth.currentUser) {
+        return await auth.currentUser.getIdToken();
+      }
+    } catch {
+      /* swallow */
+    }
+    await new Promise((r) => setTimeout(r, 150));
   }
+  return null;
 }
 
 async function api<T = any>(path: string, init?: RequestInit): Promise<T> {
