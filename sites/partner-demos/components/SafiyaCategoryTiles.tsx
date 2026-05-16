@@ -25,11 +25,11 @@ export function SafiyaCategoryTiles() {
       className="safiya-cat-section"
       style={{
         background: "var(--c-bg)",
-        padding: "8px 16px 4px",
+        padding: "8px 0 4px",
       }}
       aria-label="Kategori"
     >
-      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px" }}>
         <h2
           className="safiya-cat-heading"
           style={{
