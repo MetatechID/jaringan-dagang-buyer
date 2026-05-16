@@ -94,15 +94,29 @@ export default function BrandHomePage({ params }: { params: { brand: string } })
           ]}
         />
         <SafiyaHero />
-        {SAFIYA_CATEGORY_ORDER.map((category) => {
+        {SAFIYA_CATEGORY_ORDER.map((category, idx) => {
           const items = grouped[category];
           if (!items || items.length === 0) return null;
           const copy = SAFIYA_CATEGORY_COPY[category] || { tagline: "", anchor: category.toLowerCase() };
+          // First category renders normally; subsequent sections skip layout/
+          // paint until they're near the viewport. Browser uses
+          // contain-intrinsic-size to keep the scroll bar accurate while the
+          // content is unrendered.
+          const lazy = idx > 0;
           return (
             <section
               key={category}
               id={copy.anchor}
-              style={{ padding: "56px 24px", scrollMarginTop: 80 }}
+              style={{
+                padding: "56px 24px",
+                scrollMarginTop: 80,
+                ...(lazy
+                  ? ({
+                      contentVisibility: "auto",
+                      containIntrinsicSize: "900px",
+                    } as React.CSSProperties)
+                  : {}),
+              }}
             >
               <div style={{ maxWidth: 1200, margin: "0 auto" }}>
                 <div style={{ marginBottom: 28 }}>

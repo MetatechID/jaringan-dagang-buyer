@@ -123,9 +123,6 @@ export function BrandHeader() {
               🛒
               <CartBadge brandSlug={brandTheme.slug} />
             </Link>
-            <Link href="/" style={{ color: "#FCD34D", textDecoration: "none", fontSize: 11 }}>
-              Demo Picker
-            </Link>
           </nav>
         </div>
       </header>
@@ -206,9 +203,6 @@ export function BrandHeader() {
           </Link>
           <span style={{ width: 1, height: 22, background: "rgba(15,23,42,0.18)", display: "inline-block", margin: "0 4px" }} aria-hidden="true" />
           <BeliAmanIdentityWidget variant="light" />
-          <Link href="/" style={{ color: "var(--c-primary)", textDecoration: "none", fontSize: 11 }}>
-            Demo Picker
-          </Link>
         </nav>
       </div>
       {isSafiya && signedIn && defaultAddress ? (

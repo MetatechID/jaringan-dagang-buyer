@@ -19,7 +19,7 @@
   <rect x="-150" y="-170" width="300" height="180" rx="10" fill="#FBF6EC"/>
   <text x="0" y="-122" font-family="Georgia, serif" font-size="34" font-weight="700" fill="#6B2C1A" text-anchor="middle">Safiya</text>
   <text x="0" y="-96" font-family="Georgia, serif" font-size="13" font-style="italic" fill="#D4A24C" text-anchor="middle">healthy · tasty · authentic</text>
-  <text x="0" y="-54" font-family="Georgia, serif" font-size="22" font-weight="700" fill="#6B2C1A" text-anchor="middle">Muesli Fruit & Seed</text>
+  <text x="0" y="-54" font-family="Georgia, serif" font-size="22" font-weight="700" fill="#6B2C1A" text-anchor="middle">Muesli Fruit &amp; Seed</text>
   <text x="0" y="-28" font-family="Inter, sans-serif" font-size="11" fill="#2A1810" opacity="0.6" text-anchor="middle" letter-spacing="2">HIGH FIBER · HALAL</text>
   <!-- Art -->
   <g transform="translate(0,100)">

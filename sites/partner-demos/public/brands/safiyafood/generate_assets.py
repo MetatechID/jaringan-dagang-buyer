@@ -32,6 +32,17 @@ DARK = "#2A1810"
 WHITE = "#FFFFFF"
 
 
+def xe(s: str) -> str:
+    """XML-escape a string before inlining into <text>...</text>. Without this
+    a stray "&" in a product label (e.g., 'Muesli Fruit & Seed') breaks the
+    SVG XML parser and the whole image renders blank."""
+    return (
+        s.replace("&", "&amp;")
+         .replace("<", "&lt;")
+         .replace(">", "&gt;")
+    )
+
+
 # ---- Variant scale helpers ----
 # Each variant size maps to a "scale tier" that drives geometry + accents.
 
@@ -154,11 +165,11 @@ def kurma_jar(
         <text x="0" y="{label_top + 46}" font-family="Georgia, serif" font-size="34" font-weight="700" fill="{MAROON}" text-anchor="middle">Safiya</text>
         <text x="0" y="{label_top + 72}" font-family="Georgia, serif" font-size="14" font-style="italic" fill="{GOLD}" text-anchor="middle">authentic premium</text>
         <line x1="-60" y1="{label_top + 86}" x2="60" y2="{label_top + 86}" stroke="{GOLD}" stroke-width="1"/>
-        <text x="0" y="{label_top + 130}" font-family="Georgia, serif" font-size="26" font-weight="700" fill="{MAROON}" text-anchor="middle">{label}</text>
+        <text x="0" y="{label_top + 130}" font-family="Georgia, serif" font-size="26" font-weight="700" fill="{MAROON}" text-anchor="middle">{xe(label)}</text>
         <text x="0" y="{label_top + 158}" font-family="Inter, sans-serif" font-size="11" fill="{DARK}" opacity="0.6" text-anchor="middle" letter-spacing="2">PREMIUM · HALAL</text>
         <!-- Size badge -->
         <rect x="-78" y="{badge_y}" width="156" height="32" rx="16" fill="{badge_color_for(t)}"/>
-        <text x="0" y="{badge_y + 22}" font-family="Inter, sans-serif" font-size="16" font-weight="800" fill="{WHITE}" text-anchor="middle" letter-spacing="0.5">{size_label.upper()}</text>
+        <text x="0" y="{badge_y + 22}" font-family="Inter, sans-serif" font-size="16" font-weight="800" fill="{WHITE}" text-anchor="middle" letter-spacing="0.5">{xe(size_label.upper())}</text>
         <!-- Halal pill bottom of jar -->
         <text x="0" y="{body_bottom - 14}" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="{WHITE}" text-anchor="middle" letter-spacing="2.5">HALAL · BPOM RI</text>
         {dates_block}
@@ -194,11 +205,11 @@ def kurma_ember(
         <text x="0" y="-86" font-family="Georgia, serif" font-size="44" font-weight="700" fill="{MAROON}" text-anchor="middle">Safiya</text>
         <text x="0" y="-58" font-family="Georgia, serif" font-size="16" font-style="italic" fill="{GOLD}" text-anchor="middle">authentic premium · halal</text>
         <line x1="-110" y1="-42" x2="110" y2="-42" stroke="{GOLD}" stroke-width="1.5"/>
-        <text x="0" y="-4" font-family="Georgia, serif" font-size="32" font-weight="700" fill="{MAROON}" text-anchor="middle">{label}</text>
+        <text x="0" y="-4" font-family="Georgia, serif" font-size="32" font-weight="700" fill="{MAROON}" text-anchor="middle">{xe(label)}</text>
         <text x="0" y="20" font-family="Inter, sans-serif" font-size="11" fill="{DARK}" opacity="0.65" text-anchor="middle" letter-spacing="3">EMBER · BULK PACK</text>
         <!-- Large size badge -->
         <rect x="-110" y="60" width="220" height="44" rx="22" fill="{DARK}"/>
-        <text x="0" y="90" font-family="Inter, sans-serif" font-size="20" font-weight="800" fill="{GOLD}" text-anchor="middle" letter-spacing="1.5">{size_label.upper()} · FAMILY</text>
+        <text x="0" y="90" font-family="Inter, sans-serif" font-size="20" font-weight="800" fill="{GOLD}" text-anchor="middle" letter-spacing="1.5">{xe(size_label.upper())} · FAMILY</text>
         <!-- Date silhouettes -->
         <g transform="translate(0, 130)">
           <ellipse cx="-80" cy="0" rx="22" ry="32" fill="{flesh_color}"/>
@@ -209,7 +220,7 @@ def kurma_ember(
         </g>
         <!-- Volume mark -->
         <text x="200" y="180" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="{WHITE}" text-anchor="end" letter-spacing="1">NETTO</text>
-        <text x="200" y="200" font-family="Inter, sans-serif" font-size="16" font-weight="800" fill="{GOLD}" text-anchor="end">{size_label.upper()}</text>
+        <text x="200" y="200" font-family="Inter, sans-serif" font-size="16" font-weight="800" fill="{GOLD}" text-anchor="end">{xe(size_label.upper())}</text>
       </g>
     """).strip()
     return svg_wrap(body, bg=bg)
@@ -238,11 +249,11 @@ def kurma_box(label: str, size_label: str, *, bg: str = CREAM,
         <!-- Center label sticker -->
         <rect x="-150" y="-170" width="300" height="120" rx="10" fill="{CREAM}"/>
         <text x="0" y="-130" font-family="Georgia, serif" font-size="32" font-weight="700" fill="{primary}" text-anchor="middle">Safiya</text>
-        <text x="0" y="-100" font-family="Georgia, serif" font-size="20" font-weight="700" fill="{primary}" text-anchor="middle">{label}</text>
+        <text x="0" y="-100" font-family="Georgia, serif" font-size="20" font-weight="700" fill="{primary}" text-anchor="middle">{xe(label)}</text>
         <text x="0" y="-78" font-family="Inter, sans-serif" font-size="11" fill="{DARK}" opacity="0.6" text-anchor="middle" letter-spacing="2">GIFT EDITION</text>
         <!-- Bottom size badge -->
         <rect x="-90" y="62" width="180" height="40" rx="20" fill="{badge_color_for(t)}"/>
-        <text x="0" y="89" font-family="Inter, sans-serif" font-size="18" font-weight="800" fill="{WHITE}" text-anchor="middle">{size_label.upper()}</text>
+        <text x="0" y="89" font-family="Inter, sans-serif" font-size="18" font-weight="800" fill="{WHITE}" text-anchor="middle">{xe(size_label.upper())}</text>
         <!-- Bottom date row -->
         <g transform="translate(0, 162)">
           {_date_row(0, 4, primary)}
@@ -267,11 +278,11 @@ def kurma_box_long(label: str, size_label: str, *, bg: str = CREAM,
         <rect x="-200" y="-90" width="400" height="180" rx="12" fill="{CREAM}"/>
         <text x="0" y="-50" font-family="Georgia, serif" font-size="36" font-weight="700" fill="{primary}" text-anchor="middle">Safiya</text>
         <text x="0" y="-24" font-family="Georgia, serif" font-size="14" font-style="italic" fill="{GOLD}" text-anchor="middle">authentic premium · halal · BPOM RI</text>
-        <text x="0" y="20" font-family="Georgia, serif" font-size="28" font-weight="700" fill="{primary}" text-anchor="middle">{label}</text>
+        <text x="0" y="20" font-family="Georgia, serif" font-size="28" font-weight="700" fill="{primary}" text-anchor="middle">{xe(label)}</text>
         <text x="0" y="46" font-family="Inter, sans-serif" font-size="11" fill="{DARK}" opacity="0.6" text-anchor="middle" letter-spacing="3">SHARE PACK · FAMILY EDITION</text>
         <!-- Size badge wide -->
         <rect x="-110" y="60" width="220" height="22" rx="11" fill="{badge_color_for(t := tier(size_label)[0])}"/>
-        <text x="0" y="76" font-family="Inter, sans-serif" font-size="13" font-weight="800" fill="{WHITE}" text-anchor="middle" letter-spacing="2">{size_label.upper()} NETTO</text>
+        <text x="0" y="76" font-family="Inter, sans-serif" font-size="13" font-weight="800" fill="{WHITE}" text-anchor="middle" letter-spacing="2">{xe(size_label.upper())} NETTO</text>
         <!-- Side date silhouettes -->
         <g transform="translate(-235, 30)">
           <ellipse cx="0" cy="0" rx="18" ry="24" fill="{accent}"/>
@@ -302,7 +313,7 @@ def kurma_tangkai(label: str, size_label: str, *, bg: str = CREAM) -> str:
         <rect x="-200" y="-300" width="400" height="90" fill="{MAROON}"/>
         <text x="0" y="-244" font-family="Georgia, serif" font-size="36" font-weight="700" fill="{CREAM}" text-anchor="middle">Safiya</text>
         <text x="0" y="-220" font-family="Inter, sans-serif" font-size="11" fill="{GOLD}" text-anchor="middle" letter-spacing="3">PREMIUM TUNISIA · TANGKAI</text>
-        <text x="0" y="-160" font-family="Georgia, serif" font-size="22" font-weight="700" fill="{MAROON}" text-anchor="middle">{label}</text>
+        <text x="0" y="-160" font-family="Georgia, serif" font-size="22" font-weight="700" fill="{MAROON}" text-anchor="middle">{xe(label)}</text>
     """).strip()
 
     # Branch + dates
@@ -331,7 +342,7 @@ def kurma_tangkai(label: str, size_label: str, *, bg: str = CREAM) -> str:
     body += textwrap.dedent(f"""
         <!-- Bottom size badge -->
         <rect x="-110" y="220" width="220" height="40" rx="20" fill="{badge_color_for(t)}"/>
-        <text x="0" y="247" font-family="Inter, sans-serif" font-size="18" font-weight="800" fill="{WHITE}" text-anchor="middle">{size_label.upper()} · NETTO</text>
+        <text x="0" y="247" font-family="Inter, sans-serif" font-size="18" font-weight="800" fill="{WHITE}" text-anchor="middle">{xe(size_label.upper())} · NETTO</text>
       </g>
     """).strip()
     return svg_wrap(body, bg=bg)
@@ -410,14 +421,14 @@ def pouch(label: str, size_label: str, *, bg: str = CREAM,
         <rect x="{-half_w+30}" y="{body_top+70}" width="{2*half_w-60}" height="180" rx="10" fill="{CREAM}"/>
         <text x="0" y="{body_top+118}" font-family="Georgia, serif" font-size="34" font-weight="700" fill="{body_color}" text-anchor="middle">Safiya</text>
         <text x="0" y="{body_top+144}" font-family="Georgia, serif" font-size="13" font-style="italic" fill="{GOLD}" text-anchor="middle">healthy · tasty · authentic</text>
-        <text x="0" y="{body_top+186}" font-family="Georgia, serif" font-size="22" font-weight="700" fill="{body_color}" text-anchor="middle">{label}</text>
+        <text x="0" y="{body_top+186}" font-family="Georgia, serif" font-size="22" font-weight="700" fill="{body_color}" text-anchor="middle">{xe(label)}</text>
         <text x="0" y="{body_top+212}" font-family="Inter, sans-serif" font-size="11" fill="{DARK}" opacity="0.6" text-anchor="middle" letter-spacing="2">HIGH FIBER · HALAL</text>
         <!-- Art -->
         <g transform="translate(0,{body_top+340})">{art_svg}</g>
         {scoop}
         <!-- Size badge -->
         <rect x="-90" y="{body_bottom-90}" width="180" height="40" rx="20" fill="{badge_color_for(t)}"/>
-        <text x="0" y="{body_bottom-63}" font-family="Inter, sans-serif" font-size="18" font-weight="800" fill="{WHITE}" text-anchor="middle">{size_label.upper()} NETTO</text>
+        <text x="0" y="{body_bottom-63}" font-family="Inter, sans-serif" font-size="18" font-weight="800" fill="{WHITE}" text-anchor="middle">{xe(size_label.upper())} NETTO</text>
         <text x="0" y="{body_bottom-30}" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="{CREAM}" text-anchor="middle" letter-spacing="3">HALAL · BPOM RI</text>
       </g>
     """).strip()
@@ -452,14 +463,14 @@ def muesli_carton(label: str, size_label: str, *, bg: str = CREAM,
         <text x="0" y="-192" font-family="Inter, sans-serif" font-size="11" fill="{GOLD}" text-anchor="middle" letter-spacing="3">FAMILY · SHARE PACK</text>
         <!-- Label panel -->
         <rect x="-220" y="-160" width="440" height="200" rx="10" fill="{CREAM}"/>
-        <text x="0" y="-110" font-family="Georgia, serif" font-size="32" font-weight="700" fill="{body_color}" text-anchor="middle">{label}</text>
+        <text x="0" y="-110" font-family="Georgia, serif" font-size="32" font-weight="700" fill="{body_color}" text-anchor="middle">{xe(label)}</text>
         <text x="0" y="-80" font-family="Inter, sans-serif" font-size="12" fill="{DARK}" opacity="0.6" text-anchor="middle" letter-spacing="2">ROLLED OAT · DRIED FRUIT · NUTS · SEEDS</text>
         <g transform="translate(0,-10)">{art_blob}</g>
         <!-- Bottom band -->
         <rect x="-260" y="160" width="520" height="100" fill="{DARK}" opacity="0.18"/>
         <!-- Size badge -->
         <rect x="-150" y="80" width="300" height="46" rx="23" fill="{badge_color_for(tier(size_label)[0])}"/>
-        <text x="0" y="110" font-family="Inter, sans-serif" font-size="22" font-weight="800" fill="{WHITE}" text-anchor="middle" letter-spacing="2">{size_label.upper()} NETTO</text>
+        <text x="0" y="110" font-family="Inter, sans-serif" font-size="22" font-weight="800" fill="{WHITE}" text-anchor="middle" letter-spacing="2">{xe(size_label.upper())} NETTO</text>
         <text x="0" y="220" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="{CREAM}" text-anchor="middle" letter-spacing="3">HALAL · BPOM RI · HIGH FIBER</text>
       </g>
     """).strip()
@@ -517,9 +528,9 @@ def honey_jar(label: str, size_label: str, *, bg: str = CREAM, hue: str = "#C28E
         <!-- Label sticker -->
         <rect x="{-half_w + 30}" y="{body_top + 60}" width="{2*half_w - 60}" height="220" rx="10" fill="{CREAM}"/>
         <text x="0" y="{body_top + 102}" font-family="Georgia, serif" font-size="32" font-weight="700" fill="{MAROON}" text-anchor="middle">Safiya</text>
-        <text x="0" y="{body_top + 124}" font-family="Georgia, serif" font-size="13" font-style="italic" fill="{GOLD}" text-anchor="middle">pure & raw</text>
+        <text x="0" y="{body_top + 124}" font-family="Georgia, serif" font-size="13" font-style="italic" fill="{GOLD}" text-anchor="middle">pure · raw</text>
         <line x1="-50" y1="{body_top + 136}" x2="50" y2="{body_top + 136}" stroke="{GOLD}" stroke-width="1"/>
-        <text x="0" y="{body_top + 170}" font-family="Georgia, serif" font-size="22" font-weight="700" fill="{MAROON}" text-anchor="middle">{label}</text>
+        <text x="0" y="{body_top + 170}" font-family="Georgia, serif" font-size="22" font-weight="700" fill="{MAROON}" text-anchor="middle">{xe(label)}</text>
         <text x="0" y="{body_top + 194}" font-family="Inter, sans-serif" font-size="11" fill="{DARK}" opacity="0.6" text-anchor="middle" letter-spacing="2">NATURAL · UNFILTERED</text>
         <!-- Honey drips visualisation -->
         <g transform="translate(0,{body_top + 224})">
@@ -530,7 +541,7 @@ def honey_jar(label: str, size_label: str, *, bg: str = CREAM, hue: str = "#C28E
         </g>
         <!-- Size badge -->
         <rect x="-80" y="{body_bottom - 60}" width="160" height="36" rx="18" fill="{badge_color_for(t)}"/>
-        <text x="0" y="{body_bottom - 35}" font-family="Inter, sans-serif" font-size="16" font-weight="800" fill="{WHITE}" text-anchor="middle">{size_label.upper()} NETTO</text>
+        <text x="0" y="{body_bottom - 35}" font-family="Inter, sans-serif" font-size="16" font-weight="800" fill="{WHITE}" text-anchor="middle">{xe(size_label.upper())} NETTO</text>
         {dipper_svg}
       </g>
     """).strip()
@@ -569,11 +580,11 @@ def bottle(label: str, size_label: str, *, bg: str = CREAM,
         <rect x="-90" y="{-h/2 + 80}" width="180" height="240" rx="10" fill="{CREAM}"/>
         <text x="0" y="{-h/2 + 124}" font-family="Georgia, serif" font-size="30" font-weight="700" fill="{MAROON}" text-anchor="middle">Safiya</text>
         <text x="0" y="{-h/2 + 148}" font-family="Inter, sans-serif" font-size="11" fill="{GOLD}" text-anchor="middle" letter-spacing="2.5">PURE COCONUT OIL</text>
-        <text x="0" y="{-h/2 + 192}" font-family="Georgia, serif" font-size="22" font-weight="700" fill="{MAROON}" text-anchor="middle">{label}</text>
+        <text x="0" y="{-h/2 + 192}" font-family="Georgia, serif" font-size="22" font-weight="700" fill="{MAROON}" text-anchor="middle">{xe(label)}</text>
         <text x="0" y="{-h/2 + 216}" font-family="Inter, sans-serif" font-size="11" fill="{DARK}" opacity="0.6" text-anchor="middle" letter-spacing="2.5">COLD PRESSED · NATURAL</text>
         <!-- Size pill -->
         <rect x="-60" y="{-h/2 + 240}" width="120" height="30" rx="15" fill="{badge_color_for(t)}"/>
-        <text x="0" y="{-h/2 + 260}" font-family="Inter, sans-serif" font-size="14" font-weight="800" fill="{WHITE}" text-anchor="middle">{size_label.upper()}</text>
+        <text x="0" y="{-h/2 + 260}" font-family="Inter, sans-serif" font-size="14" font-weight="800" fill="{WHITE}" text-anchor="middle">{xe(size_label.upper())}</text>
         <!-- Liquid level indicator (more "filled" for bigger size) -->
         <rect x="-100" y="{h/2 - 80}" width="200" height="50" fill="rgba(212,162,76,0.25)" rx="6"/>
       </g>
@@ -619,14 +630,14 @@ def small_pack(label: str, size_label: str, *, bg: str = CREAM,
         <rect x="{-half_w + 30}" y="{body_top + 70}" width="{2*half_w - 60}" height="180" rx="12" fill="{CREAM}"/>
         <text x="0" y="{body_top + 116}" font-family="Georgia, serif" font-size="34" font-weight="700" fill="{body_color}" text-anchor="middle">Safiya</text>
         <text x="0" y="{body_top + 140}" font-family="Inter, sans-serif" font-size="11" fill="{GOLD}" text-anchor="middle" letter-spacing="2.5">HEALTHY · PURE · HALAL</text>
-        <text x="0" y="{body_top + 188}" font-family="Georgia, serif" font-size="24" font-weight="700" fill="{body_color}" text-anchor="middle">{label}</text>
+        <text x="0" y="{body_top + 188}" font-family="Georgia, serif" font-size="24" font-weight="700" fill="{body_color}" text-anchor="middle">{xe(label)}</text>
         <text x="0" y="{body_top + 214}" font-family="Inter, sans-serif" font-size="11" fill="{DARK}" opacity="0.6" text-anchor="middle" letter-spacing="2">PREMIUM GRADE</text>
         <!-- Window with art -->
         <ellipse cx="0" cy="{body_top + 340}" rx="120" ry="60" fill="{CREAM}" opacity="0.6"/>
         <g transform="translate(0,{body_top + 320})">{art}</g>
         <!-- Size badge -->
         <rect x="-100" y="{body_bottom - 92}" width="200" height="42" rx="21" fill="{accent}"/>
-        <text x="0" y="{body_bottom - 65}" font-family="Inter, sans-serif" font-size="18" font-weight="800" fill="{WHITE}" text-anchor="middle">{size_label.upper()} NETTO</text>
+        <text x="0" y="{body_bottom - 65}" font-family="Inter, sans-serif" font-size="18" font-weight="800" fill="{WHITE}" text-anchor="middle">{xe(size_label.upper())} NETTO</text>
         <text x="0" y="{body_bottom - 30}" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="{CREAM}" text-anchor="middle" letter-spacing="3">HALAL · BPOM RI</text>
       </g>
     """).strip()
