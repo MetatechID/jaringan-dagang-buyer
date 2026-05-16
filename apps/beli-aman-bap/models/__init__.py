@@ -11,6 +11,7 @@ from .escrow_ledger import EscrowLedger, EscrowEntryType
 from .dispute import Dispute, DisputeStatus, DisputeReason
 from .storefront_event import StorefrontEvent
 from .beckn_logs import BecknInboundLog, BecknOutboundLog
+from .store_membership import StoreMembership, StoreRole
 from .mirror import (
     MirrorStore,
     MirrorProduct,
@@ -36,6 +37,8 @@ __all__ = [
     "StorefrontEvent",
     "BecknInboundLog",
     "BecknOutboundLog",
+    "StoreMembership",
+    "StoreRole",
     "MirrorStore",
     "MirrorProduct",
     "MirrorSKU",

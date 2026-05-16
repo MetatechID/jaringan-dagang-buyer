@@ -119,6 +119,7 @@ from routers.disputes import router as disputes_router  # noqa: E402
 from routers.internal_mock import router as internal_mock_router  # noqa: E402
 from routers.shipping import router as shipping_router  # noqa: E402
 from routers.analytics import router as analytics_router  # noqa: E402
+from routers.identity import router as identity_router  # noqa: E402
 
 # Beckn router depends on pynacl-backed signer code. Import defensively so
 # missing/broken deps in that module never crash the whole BAP.
@@ -140,6 +141,7 @@ app.include_router(disputes_router)
 app.include_router(internal_mock_router)
 app.include_router(shipping_router)
 app.include_router(analytics_router)
+app.include_router(identity_router)
 if _BECKN_ROUTER_AVAILABLE and beckn_router is not None:
     app.include_router(beckn_router)
 

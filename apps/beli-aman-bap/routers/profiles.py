@@ -24,6 +24,7 @@ async def get_me(profile: BeliAmanProfile = Depends(get_current_profile)) -> dic
         "display_name": profile.display_name,
         "photo_url": profile.photo_url,
         "phone_e164": profile.phone_e164,
+        "is_super_admin": profile.is_super_admin,
     }
 
 
