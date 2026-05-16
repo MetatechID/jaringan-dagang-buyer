@@ -273,6 +273,67 @@ export async function discardDraft(branch: string): Promise<void> {
   await gh(`/repos/${REPO}/git/refs/heads/${encodeURIComponent(branch)}`, { method: "DELETE" });
 }
 
+/** Look up the most recent Vercel preview URL for `branch` by scraping the
+ *  Vercel bot's PR comment. Works without a Vercel token, which is essential
+ *  while our VERCEL_TOKEN env var is unusable (returns 403 invalidToken).
+ *
+ *  The bot writes a comment containing a hidden `[vc]: #...:<base64>` block
+ *  whose decoded JSON has `projects[].previewUrl` and `nextCommitStatus`.
+ *  We pick the project whose rootDirectory matches our partner-demos path —
+ *  in monorepos there's a comment block per Vercel project.
+ */
+export async function previewFromPrComment(
+  branch: string,
+  rootDirectoryHint = "sites/partner-demos",
+): Promise<{ url: string; ready: boolean } | null> {
+  try {
+    const owner = REPO.split("/")[0];
+    const prs = await gh<any[]>(
+      `/repos/${REPO}/pulls?state=open&head=${encodeURIComponent(owner + ":" + branch)}`,
+    );
+    const pr = prs?.[0];
+    if (!pr) return null;
+    const comments = await gh<any[]>(
+      `/repos/${REPO}/issues/${pr.number}/comments?per_page=100`,
+    );
+    // Walk newest → oldest looking for the Vercel bot's block.
+    for (const c of [...comments].reverse()) {
+      const body = c?.body ?? "";
+      const m = body.match(/\[vc\]:\s*#[^:]+:([A-Za-z0-9+/=]+)/);
+      if (!m) continue;
+      try {
+        const decoded = Buffer.from(m[1], "base64").toString("utf8");
+        // The base64 payload can be truncated mid-JSON; tolerate trailing garbage.
+        const fixed = decoded.replace(/[ -]+/g, "") + "}}]}";
+        const parsed = (() => {
+          try { return JSON.parse(decoded); } catch { /* fall through */ }
+          // Best-effort: find the first valid object substring.
+          const open = decoded.indexOf("{");
+          for (let end = decoded.length; end > open; end--) {
+            try { return JSON.parse(decoded.slice(open, end)); } catch { /* keep shrinking */ }
+          }
+          return null;
+        })();
+        if (!parsed) continue;
+        const projects = parsed.projects ?? [];
+        const match = projects.find((p: any) =>
+          (p.rootDirectory ?? "").toLowerCase() === rootDirectoryHint.toLowerCase()
+          || p.name === "beli-aman-storefronts",
+        ) ?? projects[0];
+        if (match?.previewUrl) {
+          return {
+            url: match.previewUrl,
+            ready: match.nextCommitStatus === "DEPLOYED",
+          };
+        }
+      } catch {/* try next comment */}
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 /** Revert a commit on `branch` by creating a revert commit. We do it manually
  *  via the contents API since GitHub doesn't expose a one-call revert. */
 export async function revertCommit(

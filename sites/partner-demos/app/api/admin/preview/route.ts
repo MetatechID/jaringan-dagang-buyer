@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { resolveAdmin } from "@/lib/admin/auth";
+import { previewFromPrComment } from "@/lib/admin/github";
 import { latestDeploymentForBranch } from "@/lib/admin/vercel";
 
 export const runtime = "nodejs";
@@ -14,7 +15,16 @@ export async function GET(req: NextRequest) {
   const debug = req.nextUrl.searchParams.get("debug") === "1";
   if (!branch) return NextResponse.json({ error: "missing branch" }, { status: 400 });
   try {
-    const dep = await latestDeploymentForBranch(branch, sha);
+    // Primary: GitHub PR-comment scrape (works without a Vercel API token).
+    // Fallback: Vercel API (which currently 403s — leaving in place for when
+    // the token gets renewed).
+    let dep = await previewFromPrComment(branch).then((p) =>
+      p ? { url: p.url, ready: p.ready, state: p.ready ? "READY" : "BUILDING", inspector_url: undefined } : null,
+    );
+    if (!dep) {
+      const v = await latestDeploymentForBranch(branch, sha);
+      if (v) dep = { url: v.url, ready: v.ready, state: v.state, inspector_url: v.inspector_url };
+    }
     const base: any = dep
       ? {
           deployment: {
