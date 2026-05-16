@@ -77,3 +77,17 @@ class Order(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     released_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+
+    # Fulfillment state synced from seller's BPP via Beckn /on_status
+    fulfillment_status: Mapped[Optional[str]] = mapped_column(
+        String(32), nullable=True, index=True
+    )
+    fulfillment_awb: Mapped[Optional[str]] = mapped_column(
+        String(100), nullable=True
+    )
+    fulfillment_tracking_url: Mapped[Optional[str]] = mapped_column(
+        String(1024), nullable=True
+    )
+    fulfillment_last_event_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )

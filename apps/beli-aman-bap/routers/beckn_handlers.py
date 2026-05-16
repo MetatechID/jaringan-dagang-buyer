@@ -23,6 +23,7 @@ from models.mirror import (
     MirrorSKUImage,
     MirrorStore,
 )
+from models.order import Order
 
 logger = logging.getLogger(__name__)
 
@@ -184,3 +185,67 @@ async def handle_on_search(
                         )
 
     return None  # default ACK
+
+
+async def handle_on_status(
+    context: dict[str, Any],
+    message: dict[str, Any],
+    db: AsyncSession,
+) -> dict | None:
+    """Update local Order with fulfillment state from /on_status."""
+    order_msg = message.get("order") or {}
+    bpp_order_id = order_msg.get("id")
+    if not bpp_order_id:
+        return None
+
+    # Match either by seller_order_ref or our local id (UUID string).
+    candidate = (await db.execute(
+        select(Order).where(Order.seller_order_ref == bpp_order_id)
+    )).scalar_one_or_none()
+    if candidate is None and len(bpp_order_id) == 36:
+        # bpp_order_id might be our local id in some flows
+        candidate = (await db.execute(
+            select(Order).where(Order.id == bpp_order_id)
+        )).scalar_one_or_none()
+    if candidate is None:
+        logger.info("on_status for unknown order %s — ignoring", bpp_order_id)
+        return None
+
+    fulfillments = order_msg.get("fulfillments") or []
+    if not fulfillments:
+        return None
+    f = fulfillments[0]
+    state_code = (f.get("state") or {}).get("descriptor", {}).get("code")
+    if state_code:
+        candidate.fulfillment_status = state_code
+    awb = f.get("tracking_id")
+    if awb:
+        candidate.fulfillment_awb = awb
+    track_url = f.get("tracking_url")
+    if track_url:
+        candidate.fulfillment_tracking_url = track_url
+    from datetime import datetime, timezone
+    candidate.fulfillment_last_event_at = datetime.now(timezone.utc)
+    return None
+
+
+async def handle_on_confirm(
+    context: dict[str, Any],
+    message: dict[str, Any],
+    db: AsyncSession,
+) -> dict | None:
+    """Record the seller-assigned order id when /confirm completes."""
+    order_msg = message.get("order") or {}
+    bpp_order_id = order_msg.get("id")
+    txn_id = context.get("transaction_id")
+    if not bpp_order_id or not txn_id:
+        return None
+    # Find local order by transaction or by seller_order_ref
+    candidate = (await db.execute(
+        select(Order).where(Order.seller_order_ref == bpp_order_id)
+    )).scalar_one_or_none()
+    if candidate is None:
+        # No correlation field for transaction_id today; skip if unmatched.
+        return None
+    candidate.seller_order_ref = bpp_order_id
+    return None
