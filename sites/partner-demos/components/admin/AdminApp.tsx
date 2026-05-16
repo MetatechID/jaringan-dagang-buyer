@@ -390,6 +390,25 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
     [busy, draftBranch, refreshDrafts],
   );
 
+  // Collapsible sidebars — state persisted per browser so the layout sticks
+  // across refreshes / share-link opens.
+  // IMPORTANT: declared *before* any conditional early-return below to keep
+  // the hook count stable between unauthenticated and authenticated renders.
+  const [leftCollapsed, setLeftCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("vibe-left-collapsed") === "1";
+  });
+  const [rightCollapsed, setRightCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("vibe-right-collapsed") === "1";
+  });
+  useEffect(() => {
+    try { window.localStorage.setItem("vibe-left-collapsed", leftCollapsed ? "1" : "0"); } catch {}
+  }, [leftCollapsed]);
+  useEffect(() => {
+    try { window.localStorage.setItem("vibe-right-collapsed", rightCollapsed ? "1" : "0"); } catch {}
+  }, [rightCollapsed]);
+
   if (!signedIn) {
     return (
       <SignInGate brandSlug={brandSlug} brandPrimary={brandTheme.colors.primary} onSignIn={signInIdentity} />
@@ -412,23 +431,6 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
   }
 
   const accent = brandTheme.colors.primary;
-
-  // Collapsible sidebars — state persisted per browser so the layout sticks
-  // across refreshes / share-link opens.
-  const [leftCollapsed, setLeftCollapsed] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem("vibe-left-collapsed") === "1";
-  });
-  const [rightCollapsed, setRightCollapsed] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem("vibe-right-collapsed") === "1";
-  });
-  useEffect(() => {
-    try { window.localStorage.setItem("vibe-left-collapsed", leftCollapsed ? "1" : "0"); } catch {}
-  }, [leftCollapsed]);
-  useEffect(() => {
-    try { window.localStorage.setItem("vibe-right-collapsed", rightCollapsed ? "1" : "0"); } catch {}
-  }, [rightCollapsed]);
   const leftWidth = leftCollapsed ? "40px" : "minmax(0, 340px)";
   const rightWidth = rightCollapsed ? "40px" : "minmax(0, 320px)";
 
