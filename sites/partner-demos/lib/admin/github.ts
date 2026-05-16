@@ -22,7 +22,12 @@ async function gh<T = any>(path: string, init?: RequestInit): Promise<T> {
     const body = await res.text();
     throw new Error(`GitHub ${res.status} ${path}: ${body.slice(0, 200)}`);
   }
-  return res.json() as Promise<T>;
+  // 204 No Content (e.g., DELETE /git/refs/...) returns an empty body —
+  // calling res.json() on it would throw "Unexpected end of JSON input".
+  if (res.status === 204) return undefined as T;
+  const text = await res.text();
+  if (!text) return undefined as T;
+  return JSON.parse(text) as T;
 }
 
 export interface CommitEntry {
