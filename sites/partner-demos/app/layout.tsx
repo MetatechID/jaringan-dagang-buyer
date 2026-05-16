@@ -1,12 +1,86 @@
 import type { Metadata } from "next";
+import {
+  Inter,
+  Playfair_Display,
+  Montserrat,
+  Poppins,
+  Archivo,
+} from "next/font/google";
 
 import "./globals.css";
 import "@jaringan-dagang/beli-aman-sdk/styles.css";
 
+import { SITE_URL } from "@/lib/seo";
+
+// All fonts are self-hosted at build time so there's no render-blocking
+// request to fonts.googleapis.com. `display: swap` shows fallback text
+// immediately and re-paints when the webfont loads. Subsets trimmed to
+// `latin` since the storefronts are Indonesian.
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+  variable: "--font-inter",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  style: ["normal", "italic"],
+  display: "swap",
+  variable: "--font-playfair",
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-montserrat",
+});
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+  variable: "--font-poppins",
+});
+
+const archivo = Archivo({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  display: "swap",
+  variable: "--font-archivo",
+});
+
 export const metadata: Metadata = {
-  title: "Beli Aman — Partner Demo Storefronts",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    template: "%s · Beli Aman",
+    default: "Beli Aman — Belanja Aman dengan Escrow untuk DTC Indonesia",
+  },
   description:
-    "See what Antarestar, Gendes, and your brand look like with Beli Aman embedded — escrow-protected checkout for Indonesian DTC commerce.",
+    "Beli Aman adalah lapisan escrow untuk toko DTC Indonesia. Dana ditahan di escrow sampai barang Anda terima. Lihat demo storefront Safiya Food, Antarestar, dan Gendes.",
+  applicationName: "Beli Aman",
+  keywords: [
+    "beli aman", "escrow", "ecommerce indonesia", "safiya food", "kurma sukari",
+    "kurma ajwa", "muesli", "madu murni", "ramadhan hampers",
+  ],
+  authors: [{ name: "Metatech" }],
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    siteName: "Beli Aman",
+  },
+  twitter: { card: "summary_large_image" },
+  formatDetection: { telephone: false, email: false, address: false },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover" as const,
+  themeColor: "#6B2C1A",
 };
 
 export default function RootLayout({
@@ -14,17 +88,15 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const fontVars = [
+    inter.variable,
+    playfair.variable,
+    montserrat.variable,
+    poppins.variable,
+    archivo.variable,
+  ].join(" ");
   return (
-    <html lang="id">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Poppins:wght@500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="id" className={fontVars}>
       <body>{children}</body>
     </html>
   );

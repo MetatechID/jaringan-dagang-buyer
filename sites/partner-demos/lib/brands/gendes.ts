@@ -5,8 +5,8 @@ export const gendes: BrandTheme = {
   name: "Gendes",
   tagline: "Sweet care, every day · The First Sweet Aromatic Feminine Hygiene",
   fonts: {
-    heading: "Poppins, system-ui, sans-serif",
-    body: "Inter, system-ui, sans-serif",
+    heading: "var(--font-poppins), Poppins, system-ui, sans-serif",
+    body: "var(--font-inter), Inter, system-ui, sans-serif",
   },
   colors: {
     primary: "#FF69B4",

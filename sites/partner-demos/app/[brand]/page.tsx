@@ -1,10 +1,41 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import type { BrandSampleProduct } from "@jaringan-dagang/beli-aman-sdk";
 
 import { resolveBrand } from "@/lib/brands";
 import { ProductCard } from "@/components/ProductCard";
 import { AntarestarHero } from "@/components/AntarestarHero";
 import { SafiyaHero } from "@/components/SafiyaHero";
+import { JsonLd } from "@/components/JsonLd";
+import {
+  buildBrandMetadata,
+  organizationJsonLd,
+  storeJsonLd,
+  breadcrumbJsonLd,
+} from "@/lib/seo";
+
+export async function generateMetadata({
+  params,
+}: { params: { brand: string } }): Promise<Metadata> {
+  const brand = resolveBrand(params.brand);
+  if (!brand) return {};
+  const productCount = brand.sampleProducts?.length ?? 0;
+  const title =
+    params.brand === "safiyafood"
+      ? "Safiya Food · Kurma & Healthy Pantry Premium Indonesia"
+      : `${brand.name} · ${brand.tagline ?? "Belanja Aman dengan Beli Aman"}`;
+  const description =
+    params.brand === "safiyafood"
+      ? "Toko resmi Safiya Food — Kurma Sukari, Ajwa Madinah, Tunisia, muesli, madu murni, dan healthy pantry. Halal, BPOM RI, dilindungi escrow Beli Aman."
+      : `${brand.tagline ?? brand.name}. ${productCount} produk halal, terverifikasi, dilindungi escrow Beli Aman.`;
+  return buildBrandMetadata({
+    brand,
+    brandSlug: params.brand,
+    title,
+    description,
+    path: `/${params.brand}`,
+  });
+}
 
 const SAFIYA_CATEGORY_ORDER = [
   "Kurma",
@@ -52,6 +83,16 @@ export default function BrandHomePage({ params }: { params: { brand: string } })
     const grouped = groupByCategory(brand.sampleProducts || []);
     return (
       <div>
+        <JsonLd
+          data={[
+            organizationJsonLd(brand, params.brand),
+            storeJsonLd(brand, params.brand, brand.sampleProducts?.length ?? 0),
+            breadcrumbJsonLd([
+              { name: "Beranda", url: "/" },
+              { name: brand.name, url: `/${params.brand}` },
+            ]),
+          ]}
+        />
         <SafiyaHero />
         {SAFIYA_CATEGORY_ORDER.map((category) => {
           const items = grouped[category];

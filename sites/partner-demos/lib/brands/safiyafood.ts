@@ -7,8 +7,8 @@ export const safiyafood: BrandTheme = {
   name: "Safiya Food",
   tagline: "Authentic premium · healthy · halal · since 2018",
   fonts: {
-    heading: "'Playfair Display', Georgia, serif",
-    body: "Inter, system-ui, sans-serif",
+    heading: "var(--font-playfair), 'Playfair Display', Georgia, serif",
+    body: "var(--font-inter), Inter, system-ui, sans-serif",
   },
   colors: {
     primary: "#6B2C1A",

@@ -87,7 +87,7 @@ function BundleCard({
         </span>
         <h3
           style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
+            fontFamily: "var(--font-playfair), 'Playfair Display', Georgia, serif",
             fontSize: 22,
             fontWeight: 700,
             margin: "6px 0 4px",
@@ -255,7 +255,7 @@ export function PromoView({ brandSlug }: { brandSlug: string }) {
             </span>
             <h1
               style={{
-                fontFamily: "'Playfair Display', Georgia, serif",
+                fontFamily: "var(--font-playfair), 'Playfair Display', Georgia, serif",
                 fontSize: "clamp(36px, 6vw, 64px)",
                 fontWeight: 700,
                 lineHeight: 1.05,

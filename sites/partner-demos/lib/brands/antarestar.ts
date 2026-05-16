@@ -5,8 +5,8 @@ export const antarestar: BrandTheme = {
   name: "ANTARESTAR",
   tagline: "Outdoor + Utility · Let's Go Out!",
   fonts: {
-    heading: "Montserrat, system-ui, sans-serif",
-    body: "Montserrat, system-ui, sans-serif",
+    heading: "var(--font-montserrat), Montserrat, system-ui, sans-serif",
+    body: "var(--font-montserrat), Montserrat, system-ui, sans-serif",
   },
   colors: {
     primary: "#404040",
