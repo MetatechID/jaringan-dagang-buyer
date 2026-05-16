@@ -33,6 +33,43 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/beckn", tags=["beckn"])
 
 
+@router.get("/_inbound")
+async def _inbound(limit: int = 20):
+    """Recent inbound Beckn messages received by the BAP (for diagnostics)."""
+    from sqlalchemy import select, desc
+    async with async_session() as db:
+        rows = (await db.execute(
+            select(BecknInboundLog).order_by(desc(BecknInboundLog.received_at)).limit(limit)
+        )).scalars().all()
+    return {"rows": [{
+        "action": r.action,
+        "bpp_id": r.bpp_id, "bap_id": r.bap_id,
+        "received_at": r.received_at.isoformat() if r.received_at else None,
+        "message_id": r.message_id,
+        "response_status": r.response_status,
+    } for r in rows]}
+
+
+@router.get("/_mirror")
+async def _mirror():
+    """Mirror state per store (for diagnostics)."""
+    from models.mirror import MirrorStore, MirrorProduct
+    from sqlalchemy import select, func
+    async with async_session() as db:
+        rows = (await db.execute(select(MirrorStore))).scalars().all()
+        out = []
+        for s in rows:
+            cnt = (await db.execute(
+                select(func.count(MirrorProduct.id)).where(MirrorProduct.store_id == s.id)
+            )).scalar()
+            out.append({
+                "slug": s.slug, "bpp_id": s.bpp_id, "name": s.name,
+                "product_count": cnt,
+                "last_pushed_at": s.last_pushed_at.isoformat() if s.last_pushed_at else None,
+            })
+    return {"stores": out}
+
+
 @router.get("/_debug")
 async def _debug_registry():
     """Diagnostic: report what the buyer thinks the registry/static state is."""
