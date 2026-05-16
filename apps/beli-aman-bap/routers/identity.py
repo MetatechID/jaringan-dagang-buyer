@@ -111,6 +111,32 @@ async def my_stores(
         raise HTTPException(500, f"{type(e).__name__}: {e}\n{traceback.format_exc()[-1500:]}")
 
 
+@router.get("/api/v1/me/can-admin")
+async def can_admin(
+    slug: str,
+    profile: BeliAmanProfile = Depends(get_current_profile),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    """Used by the buyer Vibe admin (safiya.beliaman.com/admin). Returns
+    whether the signed-in person may edit the storefront for `slug`."""
+    if profile.is_super_admin:
+        return {"can_admin": True, "role": "super_admin", "slug": slug}
+    row = (
+        await db.execute(
+            select(StoreMembership)
+            .where(StoreMembership.profile_id == profile.id)
+            .where(StoreMembership.store_slug == slug)
+        )
+    ).scalar_one_or_none()
+    if row is None:
+        return {"can_admin": False, "role": None, "slug": slug}
+    return {
+        "can_admin": True,
+        "role": row.role.value if isinstance(row.role, StoreRole) else row.role,
+        "slug": slug,
+    }
+
+
 class InviteIn(BaseModel):
     email: str
     role: StoreRole = StoreRole.STAFF
@@ -242,6 +268,10 @@ async def ensure_tables(_: None = Depends(require_admin_token)) -> dict[str, Any
             await conn.execute(text(
                 "ALTER TABLE profiles ADD COLUMN IF NOT EXISTS is_super_admin "
                 "BOOLEAN NOT NULL DEFAULT FALSE"
+            ))
+            await conn.execute(text(
+                "ALTER TABLE store_memberships ADD COLUMN IF NOT EXISTS "
+                "store_slug VARCHAR(100)"
             ))
         return {"ok": True}
     except Exception as e:
