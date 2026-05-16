@@ -28,9 +28,32 @@ from models.order import Order
 logger = logging.getLogger(__name__)
 
 
-def _slug_from_bpp_id(bpp_id: str) -> str:
-    """safiyafood.bpp.metatech.id -> safiyafood"""
-    return bpp_id.split(".", 1)[0]
+_SLUG_OVERRIDES = {
+    "bpp.antarestar.local": "antarestar",
+    "bpp.gendes.local": "gendes",
+    "bpp.yourbrand.local": "yourbrand",
+    "bpp.jaringan-dagang.local": "default",
+    "matchamu.jaringan-dagang.id": "matchamu",
+    "optimumnutrition.jaringan-dagang.id": "optimumnutrition",
+}
+
+
+def _slug_from_bpp_id(bpp_id: str, name: str | None = None) -> str:
+    """Map a Beckn subscriber_id to a storefront slug.
+
+    Tries (in order): override map → `<slug>.bpp.metatech.id` pattern → name slugified.
+    """
+    if bpp_id in _SLUG_OVERRIDES:
+        return _SLUG_OVERRIDES[bpp_id]
+    parts = bpp_id.split(".")
+    if len(parts) >= 3 and parts[1] == "bpp":
+        return parts[0]
+    if name:
+        import re
+        slugged = re.sub(r"[^a-z0-9]+", "", name.lower())
+        if slugged:
+            return slugged
+    return bpp_id.replace(".", "-")
 
 
 async def handle_on_search(
@@ -56,8 +79,8 @@ async def handle_on_search(
 
     for provider in providers:
         provider_id = provider.get("id") or bpp_id
-        slug = _slug_from_bpp_id(provider_id)
-        store_name = (provider.get("descriptor") or {}).get("name") or slug
+        store_name = (provider.get("descriptor") or {}).get("name") or provider_id
+        slug = _slug_from_bpp_id(provider_id, store_name)
         logo = None
         imgs = (provider.get("descriptor") or {}).get("images") or []
         if imgs:
