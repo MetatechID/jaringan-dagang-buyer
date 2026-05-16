@@ -31,7 +31,8 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: "bad json" }, { status: 400 });
   }
-  if (!body.name || !/^[a-zA-Z0-9.-]+$/.test(body.name)) {
+  // Allow wildcards (*.beliaman.com) and bare hosts.
+  if (!body.name || !/^(\*\.)?[a-zA-Z0-9.-]+$/.test(body.name)) {
     return NextResponse.json({ error: "invalid domain name" }, { status: 400 });
   }
   try {
