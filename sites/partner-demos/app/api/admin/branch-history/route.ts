@@ -1,14 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { resolveAdmin } from "@/lib/admin/auth";
-import { BASE_BRANCH, extractVibeBy, listCommits } from "@/lib/admin/github";
+import { BASE_BRANCH, compareBranchAhead } from "@/lib/admin/github";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** List the commits on a vibe branch since it diverged from main. Used by the
- *  admin to show "what changed in this draft" — the chronological list of
- *  prompts the customer (or marketing) has applied. */
+/** List the commits on a vibe branch that aren't on main yet — i.e., the
+ *  exact "what's queued for production" set. Uses GitHub's compare API
+ *  rather than a windowed listCommits filter so the count is always right
+ *  even when main has many commits ahead of where the branch forked. */
 export async function GET(req: NextRequest) {
   const admin = resolveAdmin(req.headers.get("authorization"));
   if (!admin) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
@@ -18,22 +19,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "only vibe/* branches" }, { status: 400 });
   }
   try {
-    const [branchCommits, baseCommits] = await Promise.all([
-      listCommits(branch, 30),
-      listCommits(BASE_BRANCH, 30),
-    ]);
-    const baseShas = new Set(baseCommits.map((c) => c.sha));
-    const onlyOnBranch = branchCommits
-      .filter((c) => !baseShas.has(c.sha))
-      .map((c) => ({
-        sha: c.sha,
-        message: c.message,
-        date: c.date,
-        author: c.authorName,
-        url: c.url,
-        vibe_by: extractVibeBy(c),
-      }));
-    return NextResponse.json({ branch, commits: onlyOnBranch });
+    const commits = await compareBranchAhead(BASE_BRANCH, branch);
+    return NextResponse.json({ branch, commits });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || String(e) }, { status: 500 });
   }

@@ -182,6 +182,35 @@ export async function mergePr(prNumber: number, commitTitle: string): Promise<st
   return data.sha;
 }
 
+/** Return only the commits in `head` that are NOT in `base` — the
+ *  "this draft is ahead of main by N commits" set. Uses GitHub's compare
+ *  endpoint so the result is exact regardless of how far main has moved. */
+export async function compareBranchAhead(
+  base: string,
+  head: string,
+): Promise<Array<{ sha: string; message: string; date: string; author: string; url: string; vibe_by: string | null }>> {
+  const data = await gh<any>(
+    `/repos/${REPO}/compare/${encodeURIComponent(base)}...${encodeURIComponent(head)}`,
+  );
+  const commits = (data?.commits ?? []) as any[];
+  // GitHub returns oldest-first; we want newest-first to mirror the UI.
+  return commits
+    .map((c) => {
+      const fullMsg = c.commit?.message || "";
+      const subject = fullMsg.split("\n")[0];
+      const vibeByMatch = fullMsg.match(/^Vibe-By:\s*(.+)$/m);
+      return {
+        sha: c.sha as string,
+        message: subject,
+        date: c.commit?.author?.date || "",
+        author: c.commit?.author?.name || "",
+        url: c.html_url as string,
+        vibe_by: vibeByMatch ? vibeByMatch[1].trim() : null,
+      };
+    })
+    .reverse();
+}
+
 /** List recent commits on a branch (default: main). */
 export async function listCommits(branch = DEFAULT_BRANCH, perPage = 20): Promise<CommitEntry[]> {
   const data = await gh<any[]>(`/repos/${REPO}/commits?sha=${encodeURIComponent(branch)}&per_page=${perPage}`);
