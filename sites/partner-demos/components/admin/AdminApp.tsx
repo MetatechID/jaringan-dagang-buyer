@@ -246,7 +246,7 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
           ...curr,
           {
             role: "system",
-            content: `✨ Perubahan dicatat di ${r.branch} (${r.sha.slice(0, 7)}). Vercel sedang menyiapkan pratinjau…`,
+            content: `✨ Perubahan dicatat di ${r.branch} (${r.sha.slice(0, 7)}). Lagi nyiapin pratinjau…`,
             applied: { branch: r.branch, sha: r.sha, preview_url: r.preview_url ?? "", pr: r.pr },
             ts: Date.now(),
           },
@@ -270,6 +270,11 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
     setMessages(next);
     setInput("");
     setBusy("chat");
+    // Start the preview "building" state right away so the iframe blanks out
+    // and the user sees the spinner the moment they hit Kirim — instead of
+    // waiting for Claude to return changes.
+    setPreviewUrl(null);
+    setPreviewBuilding(true);
     try {
       const r = await api<{ message: string; changes: FileChange[] }>("/api/admin/chat", {
         method: "POST",
@@ -289,9 +294,14 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
       // "Naikkan ke Produksi" at the top of the preview pane.
       if (r.changes && r.changes.length > 0) {
         await applyChanges(r.changes, text.slice(0, 80));
+      } else {
+        // No file changes — Claude just chatted back. Turn off the build
+        // overlay so the user sees the previous preview or production again.
+        setPreviewBuilding(false);
       }
     } catch (e: any) {
       setErr(e?.message || String(e));
+      setPreviewBuilding(false);
     } finally {
       // applyChanges sets its own busy state, but in case it didn't run we
       // still need to clear "chat".
@@ -576,7 +586,7 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
             >
               <div className="vibe-spinner" />
               <div style={{ fontFamily: "var(--font-jakarta), Inter, sans-serif", fontSize: 16, fontWeight: 700 }}>
-                Lagi nyiapin pratinjau di Vercel…
+                Lagi nyiapin pratinjau…
               </div>
               <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", maxWidth: 360, textAlign: "center", lineHeight: 1.5 }}>
                 Biasanya 30–60 detik. Halaman ini akan auto-update begitu build selesai.
@@ -1003,7 +1013,7 @@ function DomainsModal({ accent, brandSlug, onClose }: { accent: string; brandSlu
           {loading ? (
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Loading…</div>
           ) : domains.length === 0 ? (
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>Belum ada domain custom selain default Vercel.</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>Belum ada domain custom.</div>
           ) : (
             <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
               {domains.map((d) => (
@@ -1151,7 +1161,7 @@ function NotAllowedPanel({
           {reason ? <div style={{ marginTop: 4, color: "var(--c-text-muted)" }}>Reason: {reason}</div> : null}
         </div>
         <p style={{ marginTop: 14, fontSize: 12, color: "var(--c-text-muted)" }}>
-          Cara fix: minta admin tambahkan email kamu ke <code>ADMIN_EMAILS</code> di Vercel env (Production) untuk project <code>beli-aman-storefronts</code>.
+          Cara fix: minta admin tambahkan email kamu ke daftar <code>ADMIN_EMAILS</code> di konfigurasi storefront.
         </p>
         <div style={{ marginTop: 20 }}>
           <a
