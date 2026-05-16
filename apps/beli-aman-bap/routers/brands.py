@@ -45,7 +45,7 @@ async def get_brand(slug: str, db: AsyncSession = Depends(get_db)) -> dict:
 @router.get("/{slug}/products")
 async def list_products(slug: str) -> list[dict]:
     try:
-        return catalog_service.list_products(slug)
+        return await catalog_service.list_products(slug)
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
 
@@ -53,7 +53,7 @@ async def list_products(slug: str) -> list[dict]:
 @router.get("/{slug}/products/{product_slug}")
 async def get_product(slug: str, product_slug: str) -> dict:
     try:
-        product = catalog_service.get_product(slug, product_slug)
+        product = await catalog_service.get_product(slug, product_slug)
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
     if not product:

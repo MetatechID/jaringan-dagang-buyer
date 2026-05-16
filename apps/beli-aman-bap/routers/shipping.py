@@ -35,7 +35,7 @@ async def list_rates(body: RateRequest) -> dict[str, Any]:
     Server-resolves each SKU against the brand catalog (including variants) so
     weight & value are trusted, not client-supplied.
     """
-    products = catalog_service.list_products(body.brand_slug)
+    products = await catalog_service.list_products(body.brand_slug)
 
     # Build a SKU → (name, weight_grams, price_idr) index that covers parent
     # SKUs and variant SKUs.

@@ -92,7 +92,7 @@ async def create_order(
 
     # Validate items + materialize line snapshots. Resolve SKUs that may be
     # either a parent SKU or a variant SKU on a parent product.
-    products = catalog_service.list_products(body.brand_slug)
+    products = await catalog_service.list_products(body.brand_slug)
     parent_by_sku: dict[str, dict[str, Any]] = {p["sku"]: p for p in products}
     variant_lookup: dict[str, tuple[dict[str, Any], dict[str, Any]]] = {}
     for p in products:
