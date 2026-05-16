@@ -209,6 +209,7 @@ async def revoke_member(
 class SeedIn(BaseModel):
     email: str
     store_id: str
+    store_slug: str | None = None
     role: StoreRole = StoreRole.OWNER
 
 
@@ -262,6 +263,8 @@ async def _seed_impl(body: "SeedIn", db: AsyncSession) -> dict[str, Any]:
     ).scalar_one_or_none()
     if existing is not None:
         existing.role = body.role
+        if body.store_slug:
+            existing.store_slug = body.store_slug
         if target is not None and existing.profile_id is None:
             existing.profile_id = target.id
             existing.accepted_at = datetime.now(timezone.utc)
@@ -271,6 +274,7 @@ async def _seed_impl(body: "SeedIn", db: AsyncSession) -> dict[str, Any]:
         profile_id=target.id if target else None,
         invited_email=email_lc,
         store_id=body.store_id,
+        store_slug=body.store_slug,
         role=body.role,
         accepted_at=datetime.now(timezone.utc) if target else None,
     )

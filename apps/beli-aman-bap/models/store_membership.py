@@ -46,6 +46,11 @@ class StoreMembership(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     # Store.id, a UUID string). Beli Aman doesn't own the catalog — just the
     # permission mapping — so this is a loose reference, not an FK.
     store_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    # The toko's storefront slug (e.g. "safiyafood"). The buyer Vibe admin keys
+    # by slug; the seller dashboard keys by store_id. Both query the same row.
+    store_slug: Mapped[Optional[str]] = mapped_column(
+        String(100), nullable=True, index=True
+    )
     role: Mapped[StoreRole] = mapped_column(
         SAEnum(StoreRole, name="beliaman_store_role", create_constraint=True),
         nullable=False,

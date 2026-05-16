@@ -344,27 +344,30 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
     }
   }, [applyChanges, busy, draftBranch, input, messages]);
 
-  const publish = useCallback(async () => {
-    if (!draftBranch || busy) return;
+  const publish = useCallback(async (branchArg?: string) => {
+    const branch = branchArg ?? draftBranch;
+    if (!branch || busy) return;
+    if (!confirm(`Naikkan "${branch}" ke produksi? Storefront live akan langsung berubah.`)) return;
     setBusy("publish");
     setErr(null);
     try {
       const r = await api<{ ok: true; sha: string }>("/api/admin/publish", {
         method: "POST",
-        body: JSON.stringify({ branch: draftBranch, title: `Publish ${draftBranch}` }),
+        body: JSON.stringify({ branch, title: `Publish ${branch}` }),
       });
       setMessages((curr) => [
         ...curr,
-        { role: "system", content: `✓ Published to main as ${r.sha.slice(0, 7)} — production rebuilding.`, ts: Date.now() },
+        { role: "system", content: `✅ Sudah live di produksi (${r.sha.slice(0, 7)}). Storefront sedang di-rebuild.`, ts: Date.now() },
       ]);
       setDraftBranch(null);
       setPreviewUrl(null);
+      refreshDrafts();
     } catch (e: any) {
       setErr(e?.message || String(e));
     } finally {
       setBusy(null);
     }
-  }, [busy, draftBranch]);
+  }, [busy, draftBranch, refreshDrafts]);
 
   const discardDraft = useCallback(
     async (branch: string) => {
@@ -560,26 +563,8 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
               Buka pratinjau
             </a>
           ) : null}
-          {draftBranch ? (
-            <button
-              onClick={publish}
-              disabled={busy === "publish"}
-              style={{
-                padding: "10px 18px",
-                background: "#16a34a",
-                color: "#fff",
-                border: 0,
-                borderRadius: 999,
-                fontWeight: 800,
-                fontSize: 13,
-                cursor: "pointer",
-                letterSpacing: 0.3,
-                boxShadow: "0 4px 14px rgba(22,163,74,0.35)",
-              }}
-            >
-              {busy === "publish" ? "Menaikkan…" : "🚀 Naikkan ke Produksi"}
-            </button>
-          ) : null}
+          {/* Publish lives on the draft card (right sidebar), not here —
+              a draft is the unit that goes to production. */}
         </div>
         <div style={{ flex: 1, background: "#000", minHeight: 0, position: "relative" }}>
           {previewBuilding ? (
@@ -639,7 +624,7 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
           <div style={{ padding: "12px 16px", flex: 1, minHeight: 0, overflowY: "auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8, gap: 8 }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.4, color: "#fbbf24", textTransform: "uppercase" }}>
-                Draft Aktif · {drafts.length}
+                Perubahan belum live
               </div>
               <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                 <button
@@ -683,17 +668,38 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
                     {active ? <span style={{ color: "#fbbf24", fontSize: 10 }}>● AKTIF</span> : null}
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#fde68a", fontFamily: "ui-monospace, monospace", wordBreak: "break-all", flex: 1 }}>{d.branch}</div>
                   </div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 2, lineHeight: 1.35 }}>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.85)", marginTop: 4, lineHeight: 1.4 }}>
                     {d.last_commit_message || "(empty)"}
                   </div>
-                  <div style={{ display: "flex", gap: 10, marginTop: 6, fontSize: 11 }} onClick={(e) => e.stopPropagation()}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); publish(d.branch); }}
+                    disabled={busy === "publish"}
+                    style={{
+                      marginTop: 10,
+                      width: "100%",
+                      padding: "10px 14px",
+                      background: "#16a34a",
+                      color: "#fff",
+                      border: 0,
+                      borderRadius: 8,
+                      fontWeight: 800,
+                      fontSize: 13,
+                      cursor: busy === "publish" ? "default" : "pointer",
+                      letterSpacing: 0.3,
+                      boxShadow: "0 4px 14px rgba(22,163,74,0.30)",
+                      opacity: busy === "publish" ? 0.7 : 1,
+                    }}
+                  >
+                    {busy === "publish" ? "Menaikkan…" : "🚀 Naikkan ke Produksi"}
+                  </button>
+                  <div style={{ display: "flex", gap: 12, marginTop: 8, fontSize: 11, alignItems: "center" }} onClick={(e) => e.stopPropagation()}>
                     {d.preview_url ? (
                       <>
-                        <a href={d.preview_url} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: "underline" }}>Preview</a>
+                        <a href={d.preview_url} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: "underline" }}>Pratinjau</a>
                         <button
                           onClick={() => {
                             navigator.clipboard.writeText(d.preview_url!);
-                            setMessages((curr) => [...curr, { role: "system", content: `Preview link disalin: ${d.preview_url}`, ts: Date.now() }]);
+                            setMessages((curr) => [...curr, { role: "system", content: `Link pratinjau disalin — bisa dishare ke tim marketing.`, ts: Date.now() }]);
                           }}
                           style={{ background: "transparent", border: 0, color: accent, cursor: "pointer", textDecoration: "underline", padding: 0, fontSize: 11 }}
                           title="Copy preview link"
@@ -702,6 +708,7 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
                         </button>
                       </>
                     ) : null}
+                    <div style={{ flex: 1 }} />
                     <button
                       onClick={() => discardDraft(d.branch)}
                       disabled={busy === "revert"}
