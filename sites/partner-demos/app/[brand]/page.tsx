@@ -1,19 +1,155 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import type { BrandSampleProduct } from "@jaringan-dagang/beli-aman-sdk";
 
 import { resolveBrand } from "@/lib/brands";
 import { ProductCard } from "@/components/ProductCard";
 import { AntarestarHero } from "@/components/AntarestarHero";
+import { SafiyaHero } from "@/components/SafiyaHero";
+
+const SAFIYA_CATEGORY_ORDER = [
+  "Kurma",
+  "Sereal & Granola",
+  "Healthy Pantry",
+  "Madu",
+];
+
+const SAFIYA_CATEGORY_COPY: Record<string, { tagline: string; anchor: string }> = {
+  "Kurma": {
+    tagline: "Dari Madinah, Tunisia, dan Saudi Arabia — premium dan halal.",
+    anchor: "kurma",
+  },
+  "Sereal & Granola": {
+    tagline: "Sarapan sehat, tinggi serat dan protein.",
+    anchor: "sereal",
+  },
+  "Healthy Pantry": {
+    tagline: "Pantry essentials untuk gaya hidup sehat.",
+    anchor: "pantry",
+  },
+  "Madu": {
+    tagline: "Madu murni & minyak alami — raw, tanpa campuran.",
+    anchor: "madu",
+  },
+};
+
+function groupByCategory(products: BrandSampleProduct[]): Record<string, BrandSampleProduct[]> {
+  const grouped: Record<string, BrandSampleProduct[]> = {};
+  for (const p of products) {
+    const cat = p.category || "Other";
+    (grouped[cat] ||= []).push(p);
+  }
+  return grouped;
+}
 
 export default function BrandHomePage({ params }: { params: { brand: string } }) {
   const brand = resolveBrand(params.brand);
   if (!brand) notFound();
 
   const isAntarestar = params.brand === "antarestar";
+  const isSafiya = params.brand === "safiyafood";
+
+  if (isSafiya) {
+    const grouped = groupByCategory(brand.sampleProducts || []);
+    return (
+      <div>
+        <SafiyaHero />
+        {SAFIYA_CATEGORY_ORDER.map((category) => {
+          const items = grouped[category];
+          if (!items || items.length === 0) return null;
+          const copy = SAFIYA_CATEGORY_COPY[category] || { tagline: "", anchor: category.toLowerCase() };
+          return (
+            <section
+              key={category}
+              id={copy.anchor}
+              style={{ padding: "56px 24px", scrollMarginTop: 80 }}
+            >
+              <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+                <div style={{ marginBottom: 28 }}>
+                  <span
+                    style={{
+                      fontFamily: "Inter, system-ui, sans-serif",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      letterSpacing: "0.22em",
+                      textTransform: "uppercase",
+                      color: brand.colors.secondary,
+                    }}
+                  >
+                    Koleksi
+                  </span>
+                  <h2
+                    style={{
+                      fontFamily: brand.fonts.heading,
+                      fontSize: "clamp(26px, 3.6vw, 38px)",
+                      fontWeight: 700,
+                      margin: "4px 0 6px",
+                      color: brand.colors.primary,
+                      letterSpacing: "-0.01em",
+                    }}
+                  >
+                    {category}
+                  </h2>
+                  <p style={{ margin: 0, fontSize: 15, color: "var(--c-text-muted)", maxWidth: 540 }}>
+                    {copy.tagline}
+                  </p>
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+                    gap: 22,
+                  }}
+                >
+                  {items.map((p) => (
+                    <ProductCard key={p.sku} brandSlug={params.brand} product={p} />
+                  ))}
+                </div>
+              </div>
+            </section>
+          );
+        })}
+
+        {/* Trust footer band */}
+        <section
+          style={{
+            background: brand.colors.primary,
+            color: brand.colors.primaryFg,
+            padding: "56px 24px",
+            marginTop: 32,
+          }}
+        >
+          <div
+            style={{
+              maxWidth: 1200,
+              margin: "0 auto",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: 28,
+              textAlign: "center",
+            }}
+          >
+            {[
+              { icon: "✦", title: "Authentic Premium", desc: "Langsung dari sumbernya — Madinah, Tunisia, dan Saudi Arabia." },
+              { icon: "✦", title: "BPOM RI · Halal", desc: "Terdaftar BPOM dan halal MUI. Aman untuk seluruh keluarga." },
+              { icon: "✦", title: "Beli Aman", desc: "Dana ditahan di escrow sampai pesanan Anda terima." },
+              { icon: "✦", title: "Gratis Ongkir*", desc: "Untuk pesanan di atas Rp 150.000, area Jabodetabek." },
+            ].map((item) => (
+              <div key={item.title}>
+                <div style={{ fontSize: 24, color: brand.colors.secondary, marginBottom: 6 }}>{item.icon}</div>
+                <div style={{ fontFamily: brand.fonts.heading, fontWeight: 600, fontSize: 17, marginBottom: 6 }}>
+                  {item.title}
+                </div>
+                <div style={{ fontSize: 13, opacity: 0.78, lineHeight: 1.55 }}>{item.desc}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div>
-      {/* Hero */}
       {isAntarestar ? (
         <AntarestarHero />
       ) : (
@@ -71,7 +207,6 @@ export default function BrandHomePage({ params }: { params: { brand: string } })
         </section>
       )}
 
-      {/* Featured products */}
       <section style={{ padding: isAntarestar ? "40px 24px 64px" : "48px 24px" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div

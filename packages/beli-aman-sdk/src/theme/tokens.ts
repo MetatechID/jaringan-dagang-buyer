@@ -28,6 +28,23 @@ export interface BrandCopy {
   beliAman: string;
 }
 
+export interface BrandProductVariant {
+  sku: string;
+  label: string;
+  optionValues?: Record<string, string>;
+  priceIdr: number;
+  compareAtPriceIdr?: number;
+  weightGrams?: number;
+  stock?: number;
+  image?: string;
+  gallery?: string[];
+}
+
+export interface BrandProductOptionAxis {
+  name: string;
+  values: string[];
+}
+
 export interface BrandSampleProduct {
   sku: string;
   slug: string;
@@ -38,6 +55,10 @@ export interface BrandSampleProduct {
   compareAtPriceIdr?: number;
   image: string;
   gallery?: string[];
+  category?: string;
+  badges?: string[];
+  optionAxes?: BrandProductOptionAxis[];
+  variants?: BrandProductVariant[];
 }
 
 export interface BrandTheme {

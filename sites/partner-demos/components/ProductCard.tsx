@@ -39,6 +39,10 @@ export function ProductCard({ brandSlug, product }: { brandSlug: string; product
           <img
             src={product.image}
             alt={product.name}
+            loading="lazy"
+            decoding="async"
+            width={400}
+            height={400}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).style.display = "none";

@@ -38,9 +38,18 @@ class CartItemIn(BaseModel):
     qty: int = Field(ge=1)
 
 
+class ShippingChoiceIn(BaseModel):
+    courier_code: str
+    courier_service_code: str | None = None
+    courier_service_name: str | None = None
+    price_idr: int = Field(ge=0)
+    duration: str | None = None
+
+
 class CreateOrderIn(BaseModel):
     brand_slug: str
     items: list[CartItemIn]
+    shipping: ShippingChoiceIn | None = None
 
 
 def _serialize_order(o: Order) -> dict[str, Any]:
@@ -81,23 +90,42 @@ async def create_order(
     if not brand:
         raise HTTPException(404, f"Brand '{body.brand_slug}' not found")
 
-    # Validate items + materialize line snapshots from the catalog
-    catalog_products = {p["sku"]: p for p in catalog_service.list_products(body.brand_slug)}
+    # Validate items + materialize line snapshots. Resolve SKUs that may be
+    # either a parent SKU or a variant SKU on a parent product.
+    products = catalog_service.list_products(body.brand_slug)
+    parent_by_sku: dict[str, dict[str, Any]] = {p["sku"]: p for p in products}
+    variant_lookup: dict[str, tuple[dict[str, Any], dict[str, Any]]] = {}
+    for p in products:
+        for v in p.get("variants", []) or []:
+            variant_lookup[v["sku"]] = (p, v)
+
     line_snapshots: list[dict[str, Any]] = []
     for item in body.items:
-        product = catalog_products.get(item.sku)
-        if not product:
+        if item.sku in variant_lookup:
+            parent, variant = variant_lookup[item.sku]
+            line_snapshots.append({
+                "sku": item.sku,
+                "name": f'{parent["name"]} - {variant.get("label", "")}',
+                "qty": item.qty,
+                "unit_price_idr": int(variant.get("price_idr") or parent.get("price_idr") or 0),
+                "image": variant.get("image") or parent.get("image"),
+            })
+        elif item.sku in parent_by_sku:
+            product = parent_by_sku[item.sku]
+            line_snapshots.append({
+                "sku": item.sku,
+                "name": product["name"],
+                "qty": item.qty,
+                "unit_price_idr": int(product["price_idr"]),
+                "image": product.get("image"),
+            })
+        else:
             raise HTTPException(400, f"Unknown SKU '{item.sku}' for brand {body.brand_slug}")
-        line_snapshots.append({
-            "sku": item.sku,
-            "name": product["name"],
-            "qty": item.qty,
-            "unit_price_idr": int(product["price_idr"]),
-            "image": product.get("image"),
-        })
 
-    breakdown = pricing.compute_breakdown(line_snapshots, shipping_idr=0, fee_pct_bp=brand.fee_pct_bp)
+    shipping_idr = int(body.shipping.price_idr) if body.shipping else 0
+    breakdown = pricing.compute_breakdown(line_snapshots, shipping_idr=shipping_idr, fee_pct_bp=brand.fee_pct_bp)
 
+    shipping_snapshot = body.shipping.model_dump() if body.shipping else None
     order = Order(
         profile_id=profile.id,
         brand_id=brand.id,
@@ -106,6 +134,7 @@ async def create_order(
         shipping_idr=breakdown["shipping_idr"],
         fee_idr=breakdown["fee_idr"],
         total_idr=breakdown["total_idr"],
+        shipping_address={"courier": shipping_snapshot} if shipping_snapshot else None,
         bap_id=settings.subscriber_id,
         bpp_id=brand.bpp_id,
     )

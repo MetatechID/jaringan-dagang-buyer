@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
+  <rect width="800" height="800" fill="#FBF6EC"/>
+<g transform="translate(400,400)">
+  <ellipse cx="0" cy="240" rx="180" ry="22" fill="#000" opacity="0.10"/>
+  <rect x="-130" y="-240" width="260" height="50" rx="8" fill="#6B2C1A"/>
+  <path d="M -150 -180 Q -150 -200 -130 -200 L 130 -200 Q 150 -180 150 -180 L 150 200 Q 150 240 110 240 L -110 240 Q -150 240 -150 200 Z" fill="#E4C167" stroke="#2A1810" stroke-width="2"/>
+  <rect x="-110" y="-140" width="220" height="220" rx="10" fill="#FBF6EC"/>
+  <text x="0" y="-90" font-family="Georgia, serif" font-size="34" font-weight="700" fill="#6B2C1A" text-anchor="middle">Safiya</text>
+  <text x="0" y="-60" font-family="Georgia, serif" font-size="14" font-style="italic" fill="#D4A24C" text-anchor="middle">pure & raw</text>
+  <text x="0" y="-22" font-family="Georgia, serif" font-size="28" font-weight="700" fill="#6B2C1A" text-anchor="middle">Madu Akasia</text>
+  <!-- honey dripper -->
+  <g transform="translate(0,30)">
+    <rect x="-4" y="-10" width="8" height="40" rx="2" fill="#D4A24C"/>
+    <ellipse cx="0" cy="40" rx="22" ry="12" fill="#D4A24C"/>
+    <ellipse cx="0" cy="44" rx="12" ry="6" fill="#6B2C1A" opacity="0.5"/>
+  </g>
+  <rect x="-80" y="170" width="160" height="38" rx="19" fill="#D4A24C"/>
+  <text x="0" y="196" font-family="Inter, sans-serif" font-size="20" font-weight="700" fill="#2A1810" text-anchor="middle">250ml</text>
+</g>
+</svg>

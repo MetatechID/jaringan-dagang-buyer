@@ -55,8 +55,31 @@ export async function call<T = any>(opts: ApiOptions, path: string, init: Reques
 
 // ---- Typed wrappers ----
 
+export interface ShippingChoice {
+  courier_code: string;
+  courier_service_code?: string;
+  courier_service_name?: string;
+  price_idr: number;
+  duration?: string;
+}
+
 export interface CreateOrderRequest {
   brand_slug: string;
+  items: { sku: string; qty: number }[];
+  shipping?: ShippingChoice;
+}
+
+export interface ShippingRate {
+  courier_code: string;
+  courier_service_code: string;
+  courier_service_name: string;
+  duration: string;
+  price: number;
+}
+
+export interface ShippingRatesRequest {
+  brand_slug: string;
+  destination_postal_code: string;
   items: { sku: string; qty: number }[];
 }
 
@@ -87,6 +110,11 @@ export const api = {
   listPaymentMethods: (opts: ApiOptions) => call(opts, "/api/v1/me/payment-methods"),
   createOrder: (opts: ApiOptions, body: CreateOrderRequest) =>
     call<OrderResponse>(opts, "/api/v1/orders", { method: "POST", body: JSON.stringify(body) }),
+  shippingRates: (opts: ApiOptions, body: ShippingRatesRequest) =>
+    call<{ data: ShippingRate[] }>(opts, "/api/v1/shipping/rates", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
   advanceAuth: (opts: ApiOptions, orderId: string, body: { address_inline?: any; address_id?: string }) =>
     call<OrderResponse>(opts, `/api/v1/orders/${orderId}/auth`, { method: "PATCH", body: JSON.stringify(body) }),
   advanceReview: (opts: ApiOptions, orderId: string) =>

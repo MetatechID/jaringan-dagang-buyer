@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { BeliAmanButton, useBeliAman, type BrandTheme } from "@jaringan-dagang/beli-aman-sdk";
+import { useMemo, useState } from "react";
+import { BeliAmanButton, useBeliAman, type BrandTheme, type BrandProductVariant } from "@jaringan-dagang/beli-aman-sdk";
 
 import { formatIDR } from "@/lib/format";
 
@@ -9,14 +9,46 @@ type Product = NonNullable<BrandTheme["sampleProducts"]>[number];
 
 export function ProductDetail({ brandSlug, product }: { brandSlug: string; product: Product }) {
   const { brandTheme } = useBeliAman();
-  const gallery = product.gallery && product.gallery.length > 0 ? product.gallery : [product.image];
+
+  const hasVariants = !!product.variants && product.variants.length > 0;
+  const [selectedSku, setSelectedSku] = useState<string>(
+    hasVariants ? product.variants![0].sku : product.sku,
+  );
+
+  const selectedVariant: BrandProductVariant | null = useMemo(() => {
+    if (!hasVariants) return null;
+    return product.variants!.find((v) => v.sku === selectedSku) ?? product.variants![0];
+  }, [hasVariants, product.variants, selectedSku]);
+
+  const activePriceIdr = selectedVariant?.priceIdr ?? product.priceIdr;
+  const activeCompareIdr = selectedVariant?.compareAtPriceIdr ?? product.compareAtPriceIdr;
+  const activeWeightLabel = selectedVariant?.label;
+
+  const gallery = useMemo(() => {
+    if (selectedVariant?.gallery && selectedVariant.gallery.length > 0) {
+      return selectedVariant.gallery;
+    }
+    if (selectedVariant?.image) {
+      return [selectedVariant.image, ...(product.gallery ?? [])];
+    }
+    return product.gallery && product.gallery.length > 0 ? product.gallery : [product.image];
+  }, [selectedVariant, product.gallery, product.image]);
+
   const [activeImg, setActiveImg] = useState<string>(gallery[0]);
   const [qty, setQty] = useState(1);
 
+  // Whenever the variant changes the gallery may shift; snap the active image
+  // to the new first frame so the user sees the selected SKU's primary photo.
+  if (gallery[0] && !gallery.includes(activeImg)) {
+    setActiveImg(gallery[0]);
+  }
+
   const discount =
-    product.compareAtPriceIdr && product.compareAtPriceIdr > product.priceIdr
-      ? Math.round(((product.compareAtPriceIdr - product.priceIdr) / product.compareAtPriceIdr) * 100)
+    activeCompareIdr && activeCompareIdr > activePriceIdr
+      ? Math.round(((activeCompareIdr - activePriceIdr) / activeCompareIdr) * 100)
       : null;
+
+  const cartSku = selectedVariant?.sku ?? product.sku;
 
   return (
     <div
@@ -34,18 +66,21 @@ export function ProductDetail({ brandSlug, product }: { brandSlug: string; produ
             borderRadius: "var(--r-md)",
             overflow: "hidden",
             aspectRatio: "1 / 1",
+            boxShadow: "0 1px 3px rgba(15,23,42,0.06)",
           }}
         >
           {activeImg ? (
             <img
               src={activeImg}
               alt={product.name}
+              loading="eager"
+              decoding="async"
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           ) : null}
         </div>
         {gallery.length > 1 ? (
-          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+          <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
             {gallery.map((g) => (
               <button
                 key={g}
@@ -64,7 +99,13 @@ export function ProductDetail({ brandSlug, product }: { brandSlug: string; produ
                   overflow: "hidden",
                 }}
               >
-                <img src={g} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <img
+                  src={g}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
               </button>
             ))}
           </div>
@@ -72,6 +113,28 @@ export function ProductDetail({ brandSlug, product }: { brandSlug: string; produ
       </div>
 
       <div>
+        {product.badges && product.badges.length > 0 ? (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+            {product.badges.map((b) => (
+              <span
+                key={b}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "3px 9px",
+                  borderRadius: 999,
+                  background: "var(--c-surface)",
+                  color: "var(--c-text-muted)",
+                  border: "1px solid rgba(15,23,42,0.10)",
+                  letterSpacing: 0.4,
+                }}
+              >
+                {b}
+              </span>
+            ))}
+          </div>
+        ) : null}
+
         <h1
           style={{
             fontFamily: brandTheme.fonts.heading,
@@ -89,7 +152,7 @@ export function ProductDetail({ brandSlug, product }: { brandSlug: string; produ
           </p>
         ) : null}
 
-        <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginTop: 16 }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginTop: 16, flexWrap: "wrap" }}>
           <span
             style={{
               fontSize: "clamp(22px, 3vw, 28px)",
@@ -97,11 +160,11 @@ export function ProductDetail({ brandSlug, product }: { brandSlug: string; produ
               color: "var(--c-primary)",
             }}
           >
-            {formatIDR(product.priceIdr)}
+            {formatIDR(activePriceIdr)}
           </span>
-          {product.compareAtPriceIdr ? (
+          {activeCompareIdr ? (
             <span style={{ color: "var(--c-text-muted)", textDecoration: "line-through", fontSize: 14 }}>
-              {formatIDR(product.compareAtPriceIdr)}
+              {formatIDR(activeCompareIdr)}
             </span>
           ) : null}
           {discount ? (
@@ -118,9 +181,48 @@ export function ProductDetail({ brandSlug, product }: { brandSlug: string; produ
               -{discount}%
             </span>
           ) : null}
+          {activeWeightLabel ? (
+            <span style={{ fontSize: 12, color: "var(--c-text-muted)" }}>
+              · ukuran {activeWeightLabel}
+            </span>
+          ) : null}
         </div>
 
-        <p style={{ marginTop: 16, lineHeight: 1.55, color: "var(--c-text)" }}>
+        {hasVariants ? (
+          <div style={{ marginTop: 20 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--c-text-muted)", marginBottom: 8, letterSpacing: 0.6, textTransform: "uppercase" }}>
+              Pilih Ukuran
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {product.variants!.map((v) => {
+                const active = v.sku === selectedSku;
+                return (
+                  <button
+                    key={v.sku}
+                    onClick={() => setSelectedSku(v.sku)}
+                    style={{
+                      padding: "8px 14px",
+                      border: active
+                        ? `2px solid ${brandTheme.colors.primary}`
+                        : "1px solid rgba(15,23,42,0.16)",
+                      borderRadius: "var(--r-md)",
+                      background: active ? brandTheme.colors.primary : "var(--c-surface)",
+                      color: active ? brandTheme.colors.primaryFg : "var(--c-text)",
+                      cursor: "pointer",
+                      fontWeight: 600,
+                      fontSize: 13,
+                      minWidth: 64,
+                    }}
+                  >
+                    {v.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+
+        <p style={{ marginTop: 18, lineHeight: 1.55, color: "var(--c-text)" }}>
           {product.description}
         </p>
 
@@ -154,7 +256,6 @@ export function ProductDetail({ brandSlug, product }: { brandSlug: string; produ
         </div>
 
         <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 10 }}>
-          {/* Brand-native CTA — visually present so partners see "we don't replace your existing button" */}
           <button
             type="button"
             style={{
@@ -172,10 +273,9 @@ export function ProductDetail({ brandSlug, product }: { brandSlug: string; produ
             {brandTheme.copy.addToCart}
           </button>
 
-          {/* Beli Aman CTA — the focal point */}
           <BeliAmanButton
             brandSlug={brandSlug}
-            items={[{ sku: product.sku, qty }]}
+            items={[{ sku: cartSku, qty }]}
             fullWidth
           />
         </div>

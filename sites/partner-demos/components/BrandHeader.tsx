@@ -5,9 +5,17 @@ import { useBeliAman } from "@jaringan-dagang/beli-aman-sdk";
 
 const ANTARESTAR_NAV = ["Apparel", "Bags", "Camping", "Footwear", "Jacket", "Sport"];
 
+const SAFIYA_NAV: Array<{ label: string; href: string }> = [
+  { label: "Kurma", href: "#kurma" },
+  { label: "Sereal", href: "#sereal" },
+  { label: "Pantry", href: "#pantry" },
+  { label: "Madu", href: "#madu" },
+];
+
 export function BrandHeader() {
   const { brandTheme } = useBeliAman();
   const isAntarestar = brandTheme.slug === "antarestar";
+  const isSafiya = brandTheme.slug === "safiyafood";
 
   if (isAntarestar) {
     return (
@@ -130,11 +138,30 @@ export function BrandHeader() {
             gap: 18,
             fontSize: 13,
             color: "var(--c-text-muted)",
+            flexWrap: "wrap",
+            justifyContent: "flex-end",
           }}
         >
-          <Link href={`/${brandTheme.slug}`} style={{ color: "inherit", textDecoration: "none" }}>
-            Shop
-          </Link>
+          {isSafiya
+            ? SAFIYA_NAV.map((item) => (
+                <a
+                  key={item.label}
+                  href={`/${brandTheme.slug}${item.href}`}
+                  style={{
+                    color: "inherit",
+                    textDecoration: "none",
+                    fontWeight: 600,
+                    letterSpacing: 0.4,
+                  }}
+                >
+                  {item.label}
+                </a>
+              ))
+            : (
+              <Link href={`/${brandTheme.slug}`} style={{ color: "inherit", textDecoration: "none" }}>
+                Shop
+              </Link>
+            )}
           <Link href={`/${brandTheme.slug}/cart`} style={{ color: "inherit", textDecoration: "none" }}>
             🛒 Cart
           </Link>

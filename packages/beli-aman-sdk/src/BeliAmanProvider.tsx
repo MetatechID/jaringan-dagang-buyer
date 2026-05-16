@@ -20,7 +20,7 @@ import {
   watchUser,
   type FirebaseConfig,
 } from "./lib/firebase";
-import { api, type ApiOptions, type OrderResponse } from "./lib/api";
+import { api, type ApiOptions, type OrderResponse, type ShippingChoice } from "./lib/api";
 import {
   clearFlow,
   readFlow,
@@ -86,7 +86,7 @@ interface BeliAmanContextValue {
 
   // step actions
   startSignIn: () => Promise<void>;
-  submitCartReview: (input: { addressInline: any }) => Promise<void>;
+  submitCartReview: (input: { addressInline: any; shipping?: ShippingChoice }) => Promise<void>;
   proceedToPayment: () => Promise<void>;
   confirmPayment: () => Promise<void>;
   resetFlow: () => void;
@@ -269,9 +269,13 @@ export function BeliAmanProvider({
   }, [apiOpts]);
 
   const submitCartReview = useCallback(
-    async ({ addressInline }: { addressInline: any }) => {
+    async ({ addressInline, shipping }: { addressInline: any; shipping?: ShippingChoice }) => {
       try {
-        const created = await api.createOrder(apiOpts, { brand_slug: brandSlug, items });
+        const created = await api.createOrder(apiOpts, {
+          brand_slug: brandSlug,
+          items,
+          shipping,
+        });
         const authed = await api.advanceAuth(apiOpts, created.id, { address_inline: addressInline });
         setOrder(authed);
         setStep("confirm");

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
+  <rect width="800" height="800" fill="#FBF6EC"/>
+<g transform="translate(400,400)">
+  <ellipse cx="0" cy="260" rx="160" ry="20" fill="#000" opacity="0.10"/>
+  <rect x="-30" y="-300" width="60" height="60" rx="6" fill="#6B2C1A"/>
+  <path d="M -100 -240 L 100 -240 L 130 -180 L 130 240 L -130 240 L -130 -180 Z" fill="#F1E6CB" stroke="#2A1810" stroke-width="2"/>
+  <rect x="-90" y="-120" width="180" height="200" rx="8" fill="#FBF6EC"/>
+  <text x="0" y="-70" font-family="Georgia, serif" font-size="30" font-weight="700" fill="#6B2C1A" text-anchor="middle">Safiya</text>
+  <text x="0" y="-30" font-family="Georgia, serif" font-size="20" font-weight="700" fill="#6B2C1A" text-anchor="middle">VCO Coconut</text>
+  <rect x="-60" y="0" width="120" height="36" rx="18" fill="#D4A24C"/>
+  <text x="0" y="25" font-family="Inter, sans-serif" font-size="16" font-weight="700" fill="#2A1810" text-anchor="middle">250ml</text>
+  <text x="0" y="55" font-family="Inter, sans-serif" font-size="10" font-weight="600" fill="#6B2C1A" text-anchor="middle" letter-spacing="2">VCO · NATURAL</text>
+</g>
+</svg>

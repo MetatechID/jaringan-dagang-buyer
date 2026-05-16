@@ -2,11 +2,13 @@ import type { BrandTheme } from "@jaringan-dagang/beli-aman-sdk";
 
 import { antarestar } from "./antarestar";
 import { gendes } from "./gendes";
+import { safiyafood } from "./safiyafood";
 import { DEFAULT_YOURBRAND, buildYourBrand, type YourBrandOverrides } from "./yourbrand";
 
 export const STATIC_BRANDS: Record<string, BrandTheme> = {
   antarestar,
   gendes,
+  safiyafood,
   yourbrand: DEFAULT_YOURBRAND,
 };
 

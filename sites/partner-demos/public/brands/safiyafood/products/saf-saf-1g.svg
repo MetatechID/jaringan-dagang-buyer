@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
+  <rect width="800" height="800" fill="#FBF6EC"/>
+<g transform="translate(400,400)">
+  <rect x="-200" y="-280" width="400" height="540" rx="22" fill="#C9302C" stroke="#2A1810" stroke-width="2"/>
+  <rect x="-160" y="-220" width="320" height="180" rx="12" fill="#FBF6EC"/>
+  <text x="0" y="-160" font-family="Georgia, serif" font-size="36" font-weight="700" fill="#C9302C" text-anchor="middle">Safiya</text>
+  <text x="0" y="-126" font-family="Georgia, serif" font-size="14" font-style="italic" fill="#D4A24C" text-anchor="middle">healthy · pure · halal</text>
+  <text x="0" y="-78" font-family="Georgia, serif" font-size="26" font-weight="700" fill="#C9302C" text-anchor="middle">Saffron</text>
+  <g transform="translate(0,40)"><path d="M -30 0 Q -10 -10 0 0 Q 10 10 30 0" stroke="#C9302C" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M -20 20 Q 0 10 20 20" stroke="#C9302C" stroke-width="6" fill="none" stroke-linecap="round"/></g>
+  <rect x="-90" y="160" width="180" height="42" rx="21" fill="#D4A24C"/>
+  <text x="0" y="188" font-family="Inter, sans-serif" font-size="20" font-weight="700" fill="#2A1810" text-anchor="middle">1g</text>
+  <text x="0" y="230" font-family="Inter, sans-serif" font-size="10" font-weight="600" fill="#FBF6EC" text-anchor="middle" letter-spacing="3">HALAL · BPOM RI</text>
+</g>
+</svg>
