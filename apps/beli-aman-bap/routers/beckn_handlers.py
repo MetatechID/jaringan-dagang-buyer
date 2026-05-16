@@ -87,11 +87,23 @@ async def handle_on_search(
         if imgs:
             logo = imgs[0] if isinstance(imgs[0], str) else imgs[0].get("url")
 
+        # Look up by bpp_id first (preferred), then by slug (so a toko that
+        # rotated/updated its subscriber_id keeps the same mirror row).
         store = (
             await db.execute(
                 select(MirrorStore).where(MirrorStore.bpp_id == provider_id)
             )
         ).scalar_one_or_none()
+        if store is None:
+            store = (
+                await db.execute(
+                    select(MirrorStore).where(MirrorStore.slug == slug)
+                )
+            ).scalar_one_or_none()
+            if store is not None and store.bpp_id != provider_id:
+                logger.info("MirrorStore slug=%s: bpp_id %s -> %s (rotation/rename)",
+                            slug, store.bpp_id, provider_id)
+                store.bpp_id = provider_id
         if store is None:
             store = MirrorStore(
                 bpp_id=provider_id,
