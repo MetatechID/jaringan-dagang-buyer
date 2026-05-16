@@ -45,7 +45,8 @@ class Settings(BaseSettings):
     # --- CORS ---
     # Comma-separated list of allowed origins.
     allowed_origins: str = (
-        "http://localhost:3000,http://localhost:3002,http://localhost:3003"
+        "http://localhost:3000,http://localhost:3002,http://localhost:3003,"
+        "https://beli-aman.metatech.id"
     )
 
     # --- Seller bridge (best-effort POST when an order moves to ESCROW_HELD) ---

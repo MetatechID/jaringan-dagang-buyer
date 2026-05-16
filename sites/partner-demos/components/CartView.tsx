@@ -8,6 +8,7 @@ import { resolveBrand } from "@/lib/brands";
 import { useCart } from "@/lib/cart";
 import { formatIDR } from "@/lib/format";
 import { lookupSku, similarProducts } from "@/lib/sku-lookup";
+import { trackEvent } from "@/lib/analytics";
 
 export function CartView({ brandSlug }: { brandSlug: string }) {
   const brand = resolveBrand(brandSlug);
@@ -380,7 +381,15 @@ export function CartView({ brandSlug }: { brandSlug: string }) {
               <strong style={{ fontSize: 20, color: brand.colors.primary }}>{formatIDR(subtotalIdr)}</strong>
             </div>
 
-            <div style={{ marginTop: 18 }}>
+            <div
+              style={{ marginTop: 18 }}
+              onClickCapture={() =>
+                trackEvent("checkout_start", brandSlug, {
+                  total_idr: subtotalIdr,
+                  item_count: totalCount,
+                })
+              }
+            >
               <BeliAmanButton
                 brandSlug={brandSlug}
                 items={lines.map((l) => ({ sku: l.sku, qty: l.qty }))}

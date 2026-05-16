@@ -5,6 +5,7 @@ import { BeliAmanThemeProvider } from "@/components/BeliAmanThemeProvider";
 import { BrandHeader } from "@/components/BrandHeader";
 import { BrandFooter } from "@/components/BrandFooter";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { AnalyticsBoot } from "@/components/AnalyticsBoot";
 
 export function generateStaticParams() {
   return BRAND_SLUGS.map((slug) => ({ brand: slug }));
@@ -34,12 +35,13 @@ export default function BrandLayout({
         }}
       >
         <BrandHeader />
-        {/* {/* @vibe:main-content */}
+        {/* @vibe:main-content */}
         <main style={{ flex: 1 }} className="brand-main">
           {children}
         </main>
         <BrandFooter />
         <MobileBottomNav brandSlug={params.brand} />
+        <AnalyticsBoot brandSlug={params.brand} />
       </div>
       {/* Spacer so the mobile bottom nav doesn't cover sticky page CTAs. */}
       <style>{`

@@ -9,6 +9,7 @@ from .order import Order, OrderState
 from .order_event import OrderEvent
 from .escrow_ledger import EscrowLedger, EscrowEntryType
 from .dispute import Dispute, DisputeStatus, DisputeReason
+from .storefront_event import StorefrontEvent
 
 __all__ = [
     "Base",
@@ -24,4 +25,5 @@ __all__ = [
     "Dispute",
     "DisputeStatus",
     "DisputeReason",
+    "StorefrontEvent",
 ]

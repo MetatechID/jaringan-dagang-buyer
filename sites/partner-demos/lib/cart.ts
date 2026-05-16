@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 
+import { trackEvent } from "./analytics";
+
 /** Cart line — minimal client-side, server validates on order create. */
 export interface CartLine {
   sku: string;
@@ -83,6 +85,7 @@ export function useCart(brandSlug: string) {
       if (idx >= 0) cur[idx] = { sku, qty: cur[idx].qty + qty };
       else cur.push({ sku, qty });
       setLines(cur);
+      trackEvent("add_to_cart", brandSlug, { sku, qty });
     },
     [brandSlug, setLines],
   );
@@ -96,6 +99,10 @@ export function useCart(brandSlug: string) {
         else cur.push({ sku: e.sku, qty: e.qty });
       }
       setLines(cur);
+      trackEvent("add_bundle_to_cart", brandSlug, {
+        item_count: entries.length,
+        total_qty: entries.reduce((s, e) => s + e.qty, 0),
+      });
     },
     [brandSlug, setLines],
   );
