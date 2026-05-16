@@ -27,7 +27,8 @@ async function gh<T = any>(path: string, init?: RequestInit): Promise<T> {
 
 export interface CommitEntry {
   sha: string;
-  message: string;
+  message: string;            // first line (commit subject)
+  full_message: string;       // full body, for trailer parsing
   authorEmail: string;
   authorName: string;
   date: string;
@@ -182,11 +183,24 @@ export async function listCommits(branch = DEFAULT_BRANCH, perPage = 20): Promis
   return data.map((c) => ({
     sha: c.sha,
     message: (c.commit?.message || "").split("\n")[0],
+    full_message: c.commit?.message || "",
     authorEmail: c.commit?.author?.email || "",
     authorName: c.commit?.author?.name || "",
     date: c.commit?.author?.date || "",
     url: c.html_url,
   }));
+}
+
+/** Filter commits to only those produced by the vibe editor for the given
+ *  tenant. Looks for a `Vibe-Tenant: <slug>` trailer in the commit message. */
+export function isVibeCommitForTenant(c: CommitEntry, tenant: string): boolean {
+  const re = new RegExp(`(^|\\n)Vibe-Tenant:\\s*${tenant}\\b`, "i");
+  return re.test(c.full_message);
+}
+
+export function extractVibeBy(c: CommitEntry): string | null {
+  const m = c.full_message.match(/(?:^|\n)Vibe-By:\s*([^\s\n]+)/i);
+  return m ? m[1] : null;
 }
 
 export interface DraftBranch {
@@ -259,7 +273,7 @@ export async function discardDraft(branch: string): Promise<void> {
 export async function revertCommit(
   branch: string,
   sha: string,
-  author: { email: string; name: string },
+  author: { email: string; name: string; tenant?: string },
 ): Promise<string> {
   // Get the patch of the bad commit so we can apply its reverse.
   const detail = await gh<{ files: { filename: string; patch?: string; status: string }[] }>(
@@ -285,5 +299,7 @@ export async function revertCommit(
   if (changes.length === 0) {
     throw new Error("No revertable files in commit (v0 only reverts modify/delete)");
   }
-  return commitFiles(branch, `Revert ${sha.slice(0, 7)}`, changes, author, branch);
+  const tenant = author.tenant || "safiyafood";
+  const msg = `Revert ${sha.slice(0, 7)}\n\nVibe-Tenant: ${tenant}\nVibe-By: ${author.email}`;
+  return commitFiles(branch, msg, changes, author, branch);
 }

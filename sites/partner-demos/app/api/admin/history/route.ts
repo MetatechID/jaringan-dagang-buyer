@@ -1,7 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { resolveAdmin } from "@/lib/admin/auth";
-import { listCommits, BASE_BRANCH } from "@/lib/admin/github";
+import {
+  BASE_BRANCH,
+  extractVibeBy,
+  isVibeCommitForTenant,
+  listCommits,
+} from "@/lib/admin/github";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,26 +17,37 @@ const FUNNEL_URL = process.env.NEXT_PUBLIC_ANALYTICS_URL?.replace(/\/track$/, "/
 export async function GET(req: NextRequest) {
   const admin = resolveAdmin(req.headers.get("authorization"));
   if (!admin) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const tenant = (req.nextUrl.searchParams.get("tenant") || "safiyafood").toLowerCase();
   try {
-    const commits = await listCommits(BASE_BRANCH, 20);
-    // Pull funnel per version_sha and zip onto the commit list. The funnel
-    // endpoint is keyed by tenant_slug — single tenant for v0.
+    // Pull a generous slice so we have enough vibe commits left after filtering
+    // out engine commits that touched the monorepo but aren't tenant changes.
+    const all = await listCommits(BASE_BRANCH, 80);
+    const tenantCommits = all
+      .filter((c) => isVibeCommitForTenant(c, tenant))
+      .slice(0, 20)
+      .map((c) => ({
+        ...c,
+        vibe_by: extractVibeBy(c),
+      }));
+
     let funnel: any = { versions: [] };
     try {
-      const r = await fetch(`${FUNNEL_URL}?tenant_slug=safiyafood&days=14`, { cache: "no-store" });
+      const r = await fetch(`${FUNNEL_URL}?tenant_slug=${encodeURIComponent(tenant)}&days=30`, {
+        cache: "no-store",
+      });
       if (r.ok) funnel = await r.json();
     } catch {
-      /* funnel optional */
+      /* funnel is optional */
     }
     const funnelByShaPrefix = new Map<string, any>();
     for (const v of funnel.versions ?? []) {
       funnelByShaPrefix.set(String(v.version_sha).slice(0, 7), v);
     }
-    const result = commits.map((c) => ({
+    const result = tenantCommits.map((c) => ({
       ...c,
       funnel: funnelByShaPrefix.get(c.sha.slice(0, 7)) || null,
     }));
-    return NextResponse.json({ commits: result, base_branch: BASE_BRANCH });
+    return NextResponse.json({ commits: result, base_branch: BASE_BRANCH, tenant });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || String(e) }, { status: 500 });
   }

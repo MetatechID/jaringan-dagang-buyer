@@ -12,7 +12,11 @@ interface Body {
   branch: string;             // e.g. "vibe/2026-05-16-1730"
   title: string;              // commit message + PR title
   changes: { path: string; content: string; why?: string }[];
+  tenant?: string;            // tenant slug; defaults to "safiyafood"
 }
+
+const TENANT_TRAILER = (tenant: string, email: string) =>
+  `\n\nVibe-Tenant: ${tenant}\nVibe-By: ${email}`;
 
 export async function POST(req: NextRequest) {
   const admin = resolveAdmin(req.headers.get("authorization"));
@@ -32,20 +36,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `path rejected: ${c.path} — ${check.reason}` }, { status: 400 });
     }
   }
+  const tenant = (body.tenant || "safiyafood").toLowerCase();
+  const commitMsg = `${body.title}${TENANT_TRAILER(tenant, admin.email)}`;
   try {
     const sha = await commitFiles(
       body.branch,
-      body.title,
+      commitMsg,
       body.changes,
       { name: admin.name || admin.email.split("@")[0], email: admin.email },
     );
-    // Open or update the PR so the user has a one-click "review on GitHub" link.
-    const pr = await ensurePr(
-      body.branch,
-      body.title,
-      `Vibe-code change by ${admin.email}\n\n${body.changes.map((c) => `- ${c.path} — ${c.why ?? ""}`).join("\n")}`,
-      BASE_BRANCH,
-    );
+    const prBody =
+      `Vibe-code change by **${admin.name || admin.email}** for tenant \`${tenant}\`\n\n` +
+      body.changes.map((c) => `- \`${c.path}\` — ${c.why ?? ""}`).join("\n") +
+      `\n\n<sub>Vibe-Tenant: ${tenant} · Vibe-By: ${admin.email}</sub>`;
+    const pr = await ensurePr(body.branch, body.title, prBody, BASE_BRANCH);
     // Try to resolve the actual Vercel preview URL via API. May be null
     // immediately after commit while Vercel is still queueing the build —
     // the client should poll /api/admin/preview?branch=... to refresh.

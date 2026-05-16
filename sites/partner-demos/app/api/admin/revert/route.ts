@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   const admin = resolveAdmin(req.headers.get("authorization"));
   if (!admin) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  let body: { sha: string };
+  let body: { sha: string; tenant?: string };
   try {
     body = await req.json();
   } catch {
@@ -27,16 +27,18 @@ export async function POST(req: NextRequest) {
   }
   if (!body.sha) return NextResponse.json({ error: "missing sha" }, { status: 400 });
   const shortSha = body.sha.slice(0, 7);
+  const tenant = (body.tenant || "safiyafood").toLowerCase();
   const branch = `vibe/revert-${shortSha}-${Date.now().toString(36)}`;
   try {
     const revertSha = await revertCommit(branch, body.sha, {
       name: admin.name || admin.email.split("@")[0],
       email: admin.email,
+      tenant,
     });
     const pr = await ensurePr(
       branch,
       `Revert ${shortSha} via Vibe Editor`,
-      `Revert requested by ${admin.email}. Review preview deploy before publishing.`,
+      `Revert requested by **${admin.name || admin.email}** for tenant \`${tenant}\`.\n\n<sub>Vibe-Tenant: ${tenant} · Vibe-By: ${admin.email}</sub>`,
       BASE_BRANCH,
     );
     // Give Vercel ~1.5s to register the deploy, then look it up.
