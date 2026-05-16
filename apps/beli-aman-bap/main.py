@@ -101,6 +101,7 @@ from routers.disputes import router as disputes_router  # noqa: E402
 from routers.internal_mock import router as internal_mock_router  # noqa: E402
 from routers.shipping import router as shipping_router  # noqa: E402
 from routers.analytics import router as analytics_router  # noqa: E402
+from routers.beckn import router as beckn_router  # noqa: E402
 
 app.include_router(auth_router)
 app.include_router(profiles_router)
@@ -112,6 +113,7 @@ app.include_router(disputes_router)
 app.include_router(internal_mock_router)
 app.include_router(shipping_router)
 app.include_router(analytics_router)
+app.include_router(beckn_router)
 
 
 @app.get("/health")
