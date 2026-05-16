@@ -36,4 +36,9 @@ __all__ = [
     "StorefrontEvent",
     "BecknInboundLog",
     "BecknOutboundLog",
+    "MirrorStore",
+    "MirrorProduct",
+    "MirrorSKU",
+    "MirrorProductImage",
+    "MirrorSKUImage",
 ]
