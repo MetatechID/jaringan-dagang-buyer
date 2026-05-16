@@ -218,6 +218,36 @@ async def seed_membership(
     _: None = Depends(require_admin_token),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    try:
+        return await _seed_impl(body, db)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, f"{type(e).__name__}: {e}\n{traceback.format_exc()[-1800:]}")
+
+
+@router.post("/api/v1/identity/ensure-tables")
+async def ensure_tables(_: None = Depends(require_admin_token)) -> dict[str, Any]:
+    """Create the store_memberships table + add profiles.is_super_admin if
+    they don't exist yet (Base.metadata.create_all is idempotent)."""
+    from database import engine
+    from models import Base  # registers all models
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        # is_super_admin may need a manual ADD COLUMN if profiles predates it
+        from sqlalchemy import text
+        async with engine.begin() as conn:
+            await conn.execute(text(
+                "ALTER TABLE profiles ADD COLUMN IF NOT EXISTS is_super_admin "
+                "BOOLEAN NOT NULL DEFAULT FALSE"
+            ))
+        return {"ok": True}
+    except Exception as e:
+        raise HTTPException(500, f"{type(e).__name__}: {e}\n{traceback.format_exc()[-1500:]}")
+
+
+async def _seed_impl(body: "SeedIn", db: AsyncSession) -> dict[str, Any]:
     """Admin backfill: grant a person access to a store before they sign in."""
     email_lc = body.email.lower()
     existing = (
