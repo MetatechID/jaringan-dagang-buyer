@@ -64,6 +64,7 @@ export function BrandHeader() {
   if (isAntarestar) {
     return (
       <header
+        className="brand-header"
         style={{
           background: "#1F2937",
           color: "#fff",
@@ -142,6 +143,7 @@ export function BrandHeader() {
 
   return (
     <header
+      className="brand-header"
       style={{
         background: "var(--c-bg)",
         borderBottom: "1px solid rgba(15, 23, 42, 0.08)",

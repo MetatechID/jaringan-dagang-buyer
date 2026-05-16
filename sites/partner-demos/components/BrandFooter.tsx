@@ -6,6 +6,7 @@ export function BrandFooter() {
   const { brandTheme } = useBeliAman();
   return (
     <footer
+      className="brand-footer"
       style={{
         background: brandTheme.colors.surface,
         padding: "32px 24px",
