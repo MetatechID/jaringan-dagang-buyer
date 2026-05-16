@@ -24,7 +24,7 @@ _proto_path = os.path.abspath(
 if _proto_path not in sys.path:
     sys.path.insert(0, _proto_path)
 
-from python import BecknSigner, RegistryClient, SubscriberNotFound  # noqa: E402
+from beckn_protocol import BecknSigner, RegistryClient, SubscriberNotFound  # noqa: E402
 from nacl.signing import SigningKey  # noqa: E402
 
 from config import settings  # noqa: E402
