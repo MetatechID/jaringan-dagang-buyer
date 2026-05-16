@@ -22,39 +22,34 @@ const TILES: Tile[] = [
 export function SafiyaCategoryTiles() {
   return (
     <section
+      className="safiya-cat-section"
       style={{
         background: "var(--c-bg)",
-        padding: "20px 16px 4px",
+        padding: "16px 16px 4px",
       }}
       aria-label="Kategori"
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div
+        <h2
+          className="safiya-cat-heading"
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "baseline",
-            marginBottom: 12,
+            fontFamily: "var(--font-playfair), Georgia, serif",
+            fontSize: 14,
+            fontWeight: 700,
+            color: "var(--c-primary)",
+            margin: "0 0 10px",
+            letterSpacing: 0.3,
+            textTransform: "uppercase",
+            opacity: 0.85,
           }}
         >
-          <h2
-            style={{
-              fontFamily: "var(--font-playfair), Georgia, serif",
-              fontSize: 16,
-              fontWeight: 700,
-              color: "var(--c-primary)",
-              margin: 0,
-              letterSpacing: 0.3,
-            }}
-          >
-            Belanja Berdasarkan Kategori
-          </h2>
-        </div>
+          Belanja Berdasarkan Kategori
+        </h2>
         <div
           className="safiya-cat-tiles"
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(5, 1fr)",
+            gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
             gap: 10,
           }}
         >
@@ -65,28 +60,32 @@ export function SafiyaCategoryTiles() {
                 key={t.label}
                 href={t.href}
                 onClick={() => trackEvent("category_tile_click", "safiyafood", { tile: t.label })}
+                className="safiya-cat-tile"
                 style={{
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: 6,
-                  padding: "14px 8px 12px",
+                  gap: 4,
+                  padding: "12px 6px 10px",
                   background: t.bg,
                   color: isPromo ? "#FBF6EC" : "var(--c-text)",
                   border: "1px solid rgba(15,23,42,0.06)",
-                  borderRadius: 14,
+                  borderRadius: 12,
                   textDecoration: "none",
                   textAlign: "center",
-                  minHeight: 86,
+                  aspectRatio: "1 / 1",
+                  maxWidth: 140,
+                  justifySelf: "center",
+                  width: "100%",
                 }}
               >
-                <span aria-hidden="true" style={{ fontSize: 28, lineHeight: 1 }}>{t.icon}</span>
+                <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>{t.icon}</span>
                 <span
                   style={{
                     fontSize: 12,
                     fontWeight: 700,
-                    letterSpacing: 0.4,
+                    letterSpacing: 0.3,
                     color: isPromo ? "#FBF6EC" : "var(--c-primary)",
                   }}
                 >
@@ -98,10 +97,12 @@ export function SafiyaCategoryTiles() {
         </div>
       </div>
       <style>{`
-        @media (max-width: 480px) {
-          .safiya-cat-tiles {
-            grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-            gap: 8px !important;
+        @media (max-width: 600px) {
+          .safiya-cat-tile {
+            aspect-ratio: auto !important;
+            min-height: 78px;
+            max-width: none !important;
+            padding: 10px 4px !important;
           }
         }
       `}</style>

@@ -26,8 +26,9 @@ export function SafiyaProductRail({
   return (
     <section
       id={anchor}
+      className="safiya-rail"
       style={{
-        padding: "20px 0 12px",
+        padding: "12px 0 8px",
         scrollMarginTop: 80,
       }}
     >
@@ -37,17 +38,18 @@ export function SafiyaProductRail({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "baseline",
-            marginBottom: 6,
+            gap: 8,
+            marginBottom: 2,
           }}
         >
           <h2
             style={{
               fontFamily: "var(--font-playfair), Georgia, serif",
-              fontSize: "clamp(18px, 2.6vw, 24px)",
+              fontSize: "clamp(17px, 1.8vw, 20px)",
               fontWeight: 700,
               color: "var(--c-primary)",
               margin: 0,
-              letterSpacing: 0.3,
+              letterSpacing: 0.2,
             }}
           >
             {title}
@@ -67,7 +69,7 @@ export function SafiyaProductRail({
           ) : null}
         </div>
         {tagline ? (
-          <p style={{ margin: "0 0 14px", fontSize: 12.5, color: "var(--c-text-muted)" }}>{tagline}</p>
+          <p style={{ margin: "0 0 10px", fontSize: 12, color: "var(--c-text-muted)" }}>{tagline}</p>
         ) : null}
       </div>
 
@@ -77,7 +79,7 @@ export function SafiyaProductRail({
           display: "flex",
           gap: 12,
           overflowX: "auto",
-          padding: "4px 16px 16px",
+          padding: "2px 16px 12px",
           scrollSnapType: "x mandatory",
           WebkitOverflowScrolling: "touch",
           scrollbarWidth: "none",
@@ -107,10 +109,10 @@ function RailCard({ brandSlug, product: p }: { brandSlug: string; product: Brand
       className="safiya-rail-card"
       style={{
         flex: "0 0 auto",
-        width: 168,
+        width: 184,
         background: "var(--c-surface)",
         border: "1px solid rgba(15,23,42,0.08)",
-        borderRadius: 14,
+        borderRadius: 12,
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
@@ -151,7 +153,7 @@ function RailCard({ brandSlug, product: p }: { brandSlug: string; product: Brand
           </span>
         ) : null}
       </Link>
-      <div style={{ padding: "10px 10px 12px", display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+      <div style={{ padding: "8px 10px 10px", display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
         <Link
           href={`/${brandSlug}/product/${p.slug}`}
           style={{
@@ -187,8 +189,8 @@ function RailCard({ brandSlug, product: p }: { brandSlug: string; product: Brand
             add(skuToAdd, 1);
           }}
           style={{
-            marginTop: "auto",
-            padding: "7px 10px",
+            marginTop: 4,
+            padding: "6px 10px",
             background: "var(--c-primary)",
             color: "var(--c-primary-fg)",
             border: 0,
