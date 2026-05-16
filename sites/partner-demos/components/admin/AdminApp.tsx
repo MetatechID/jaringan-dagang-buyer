@@ -131,6 +131,7 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
   const [err, setErr] = useState<string | null>(null);
   const [draftBranch, setDraftBranch] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewBuilding, setPreviewBuilding] = useState(false);
   const [commits, setCommits] = useState<CommitWithFunnel[]>([]);
   const [drafts, setDrafts] = useState<DraftBranchEntry[]>([]);
   const [whoami, setWhoami] = useState<null | {
@@ -170,25 +171,56 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages.length, busy]);
 
+  // Mirror the active draft to ?draft=BRANCH so the marketing team can refresh
+  // or share the URL and land back on the same preview.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const u = new URL(window.location.href);
+    if (draftBranch) u.searchParams.set("draft", draftBranch);
+    else u.searchParams.delete("draft");
+    window.history.replaceState(null, "", u.toString());
+  }, [draftBranch]);
+
   // pollPreview + applyChanges are declared BEFORE send so send can call
   // applyChanges directly (auto-apply on chat reply).
   const pollPreview = useCallback(async (branch: string) => {
+    setPreviewBuilding(true);
     const deadline = Date.now() + 3 * 60 * 1000;
     while (Date.now() < deadline) {
       try {
         const r = await api<{ deployment: null | { url: string; ready: boolean; state: string } }>(
           `/api/admin/preview?branch=${encodeURIComponent(branch)}`,
         );
-        if (r.deployment) {
+        if (r.deployment?.ready) {
           setPreviewUrl(`${r.deployment.url}/${brandSlug}`);
-          if (r.deployment.ready) return;
+          setPreviewBuilding(false);
+          return;
         }
       } catch {
         /* swallow */
       }
       await new Promise((res) => setTimeout(res, 5000));
     }
+    setPreviewBuilding(false);
   }, [brandSlug]);
+
+  // Load a draft's current preview into the iframe and mark it active.
+  // Used by the sidebar (click a draft) and by URL hydration (?draft=BRANCH).
+  const openDraft = useCallback((branch: string) => {
+    setDraftBranch(branch);
+    setPreviewUrl(null);
+    pollPreview(branch);
+  }, [pollPreview]);
+
+  // After sign-in, if the URL has ?draft=BRANCH, load that draft so refresh
+  // and share-links work.
+  useEffect(() => {
+    if (!signedIn || draftBranch) return;
+    if (typeof window === "undefined") return;
+    const d = new URLSearchParams(window.location.search).get("draft");
+    if (d) openDraft(d);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signedIn]);
 
   const applyChanges = useCallback(
     async (changes: FileChange[], title: string) => {
@@ -196,6 +228,11 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
       setBusy("apply");
       setErr(null);
       const branch = draftBranch ?? newBranchName();
+      // Clear the iframe right away so the customer doesn't see the previous
+      // (stale) build while Vercel is rebuilding. The pollPreview below will
+      // set previewUrl back to a real URL only once the new deploy is READY.
+      setPreviewUrl(null);
+      setPreviewBuilding(true);
       try {
         const r = await api<{
           ok: true; branch: string; sha: string; preview_url: string | null;
@@ -205,14 +242,11 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
           body: JSON.stringify({ branch, title, changes, tenant: brandSlug }),
         });
         setDraftBranch(r.branch);
-        if (r.preview_url) setPreviewUrl(r.preview_url);
         setMessages((curr) => [
           ...curr,
           {
             role: "system",
-            content: r.preview_url
-              ? `✨ Preview siap di ${r.branch} (${r.sha.slice(0, 7)}). Cek pratinjau di kanan, lalu klik “Naikkan ke Produksi” kalau sudah pas.`
-              : `✨ Perubahan dicatat di ${r.branch} (${r.sha.slice(0, 7)}). Vercel sedang menyiapkan pratinjau…`,
+            content: `✨ Perubahan dicatat di ${r.branch} (${r.sha.slice(0, 7)}). Vercel sedang menyiapkan pratinjau…`,
             applied: { branch: r.branch, sha: r.sha, preview_url: r.preview_url ?? "", pr: r.pr },
             ts: Date.now(),
           },
@@ -301,6 +335,7 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
         if (draftBranch === branch) {
           setDraftBranch(null);
           setPreviewUrl(null);
+          setPreviewBuilding(false);
         }
         refreshDrafts();
       } catch (e: any) {
@@ -523,7 +558,46 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
             </button>
           ) : null}
         </div>
-        <div style={{ flex: 1, background: "#000", minHeight: 0 }}>
+        <div style={{ flex: 1, background: "#000", minHeight: 0, position: "relative" }}>
+          {previewBuilding ? (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "rgba(8,10,20,0.96)",
+                color: "#fff",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 10,
+                gap: 14,
+              }}
+            >
+              <div className="vibe-spinner" />
+              <div style={{ fontFamily: "var(--font-jakarta), Inter, sans-serif", fontSize: 16, fontWeight: 700 }}>
+                Lagi nyiapin pratinjau di Vercel…
+              </div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", maxWidth: 360, textAlign: "center", lineHeight: 1.5 }}>
+                Biasanya 30–60 detik. Halaman ini akan auto-update begitu build selesai.
+              </div>
+              {draftBranch ? (
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", fontFamily: "ui-monospace, monospace" }}>
+                  {draftBranch}
+                </div>
+              ) : null}
+              <style>{`
+                .vibe-spinner {
+                  width: 36px; height: 36px;
+                  border-radius: 50%;
+                  border: 3px solid rgba(255,255,255,0.18);
+                  border-top-color: ${accent};
+                  animation: vibe-spin 0.9s linear infinite;
+                }
+                @keyframes vibe-spin { to { transform: rotate(360deg); } }
+              `}</style>
+            </div>
+          ) : null}
           <iframe
             key={previewUrl ?? `prod-${commits[0]?.sha ?? "main"}`}
             src={previewUrl ?? `https://beli-aman.metatech.id/${brandSlug}`}
@@ -557,29 +631,55 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
                 Prune {">"} 14d
               </button>
             </div>
-            {drafts.map((d) => (
-              <div key={d.branch} style={{ marginBottom: 8, padding: 8, background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.24)", borderRadius: 8 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#fde68a", fontFamily: "ui-monospace, monospace", wordBreak: "break-all" }}>{d.branch}</div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 2, lineHeight: 1.35 }}>
-                  {d.last_commit_message || "(empty)"}
+            {drafts.map((d) => {
+              const active = d.branch === draftBranch;
+              return (
+                <div
+                  key={d.branch}
+                  onClick={() => openDraft(d.branch)}
+                  style={{
+                    marginBottom: 8,
+                    padding: 8,
+                    background: active ? "rgba(251,191,36,0.16)" : "rgba(251,191,36,0.06)",
+                    border: `1px solid ${active ? "rgba(251,191,36,0.55)" : "rgba(251,191,36,0.24)"}`,
+                    borderRadius: 8,
+                    cursor: "pointer",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    {active ? <span style={{ color: "#fbbf24", fontSize: 10 }}>● AKTIF</span> : null}
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#fde68a", fontFamily: "ui-monospace, monospace", wordBreak: "break-all", flex: 1 }}>{d.branch}</div>
+                  </div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 2, lineHeight: 1.35 }}>
+                    {d.last_commit_message || "(empty)"}
+                  </div>
+                  <div style={{ display: "flex", gap: 10, marginTop: 6, fontSize: 11 }} onClick={(e) => e.stopPropagation()}>
+                    {d.preview_url ? (
+                      <>
+                        <a href={d.preview_url} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: "underline" }}>Preview ↗</a>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(d.preview_url!);
+                            setMessages((curr) => [...curr, { role: "system", content: `🔗 Preview link disalin: ${d.preview_url}`, ts: Date.now() }]);
+                          }}
+                          style={{ background: "transparent", border: 0, color: accent, cursor: "pointer", textDecoration: "underline", padding: 0, fontSize: 11 }}
+                          title="Copy preview link"
+                        >
+                          Salin link
+                        </button>
+                      </>
+                    ) : null}
+                    <button
+                      onClick={() => discardDraft(d.branch)}
+                      disabled={busy === "revert"}
+                      style={{ background: "transparent", border: 0, color: "#fca5a5", cursor: "pointer", textDecoration: "underline", padding: 0, fontSize: 11 }}
+                    >
+                      Discard
+                    </button>
+                  </div>
                 </div>
-                <div style={{ display: "flex", gap: 10, marginTop: 6, fontSize: 11 }}>
-                  {d.preview_url ? (
-                    <a href={d.preview_url} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: "underline" }}>Preview ↗</a>
-                  ) : null}
-                  {d.pr_url ? (
-                    <a href={d.pr_url} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: "underline" }}>PR #{d.pr_number} ↗</a>
-                  ) : null}
-                  <button
-                    onClick={() => discardDraft(d.branch)}
-                    disabled={busy === "revert"}
-                    style={{ background: "transparent", border: 0, color: "#fca5a5", cursor: "pointer", textDecoration: "underline", padding: 0, fontSize: 11 }}
-                  >
-                    Discard
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : null}
 
@@ -725,15 +825,8 @@ function ChatBubble({
           </ul>
         </div>
       ) : null}
-      {msg.applied ? (
-        <div style={{ marginTop: 6, fontSize: 11, color: "rgba(255,255,255,0.55)" }}>
-          {msg.applied.pr ? (
-            <a href={msg.applied.pr.url} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: "underline" }}>
-              PR #{msg.applied.pr.number} ↗
-            </a>
-          ) : null}
-        </div>
-      ) : null}
+      {/* No PR link here — the customer doesn't read PRs. The preview iframe
+          on the right is the only feedback that matters. */}
     </div>
   );
 }
