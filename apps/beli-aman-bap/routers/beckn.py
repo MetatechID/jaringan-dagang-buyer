@@ -32,6 +32,30 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/beckn", tags=["beckn"])
 
+
+@router.get("/_debug")
+async def _debug_registry():
+    """Diagnostic: report what the buyer thinks the registry/static state is."""
+    import os
+    from pathlib import Path
+    r = _get_registry()
+    here = Path(__file__).resolve()
+    discovered = []
+    for parent in [here.parent, *here.parents][:6]:
+        for cand in (parent / "dev" / "static-subscribers.json",
+                     parent / "dev-static-subscribers.json",
+                     parent / "static-subscribers.json"):
+            discovered.append({"path": str(cand), "exists": cand.is_file()})
+    return {
+        "registry_url": r.registry_url,
+        "static_subscriber_count": len(r._static),
+        "static_subscriber_ids": list(r._static.keys()),
+        "env_BECKN_STATIC_SUBSCRIBERS_set": bool(os.environ.get("BECKN_STATIC_SUBSCRIBERS")),
+        "env_BECKN_STATIC_SUBSCRIBERS_PATH": os.environ.get("BECKN_STATIC_SUBSCRIBERS_PATH", ""),
+        "this_file": str(here),
+        "discovery_candidates": discovered[:12],
+    }
+
 REQUIRE_SIGNATURE = os.environ.get("BECKN_REQUIRE_SIGNATURE", "true").lower() != "false"
 
 _registry: RegistryClient | None = None
