@@ -28,7 +28,7 @@ export function SafiyaProductRail({
       id={anchor}
       className="safiya-rail"
       style={{
-        padding: "12px 0 8px",
+        padding: "8px 0 4px",
         scrollMarginTop: 80,
       }}
     >
@@ -38,22 +38,28 @@ export function SafiyaProductRail({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "baseline",
-            gap: 8,
-            marginBottom: 2,
+            gap: 12,
+            marginBottom: 8,
+            flexWrap: "wrap",
           }}
         >
-          <h2
-            style={{
-              fontFamily: "var(--font-playfair), Georgia, serif",
-              fontSize: "clamp(17px, 1.8vw, 20px)",
-              fontWeight: 700,
-              color: "var(--c-primary)",
-              margin: 0,
-              letterSpacing: 0.2,
-            }}
-          >
-            {title}
-          </h2>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 10, minWidth: 0, flexWrap: "wrap" }}>
+            <h2
+              style={{
+                fontFamily: "var(--font-playfair), Georgia, serif",
+                fontSize: "clamp(17px, 1.8vw, 20px)",
+                fontWeight: 700,
+                color: "var(--c-primary)",
+                margin: 0,
+                letterSpacing: 0.2,
+              }}
+            >
+              {title}
+            </h2>
+            {tagline ? (
+              <span style={{ fontSize: 12, color: "var(--c-text-muted)" }}>· {tagline}</span>
+            ) : null}
+          </div>
           {seeAllHref ? (
             <Link
               href={seeAllHref}
@@ -68,9 +74,6 @@ export function SafiyaProductRail({
             </Link>
           ) : null}
         </div>
-        {tagline ? (
-          <p style={{ margin: "0 0 10px", fontSize: 12, color: "var(--c-text-muted)" }}>{tagline}</p>
-        ) : null}
       </div>
 
       <div

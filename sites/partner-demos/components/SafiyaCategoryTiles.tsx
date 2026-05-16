@@ -25,7 +25,7 @@ export function SafiyaCategoryTiles() {
       className="safiya-cat-section"
       style={{
         background: "var(--c-bg)",
-        padding: "16px 16px 4px",
+        padding: "8px 16px 4px",
       }}
       aria-label="Kategori"
     >
@@ -33,17 +33,16 @@ export function SafiyaCategoryTiles() {
         <h2
           className="safiya-cat-heading"
           style={{
-            fontFamily: "var(--font-playfair), Georgia, serif",
-            fontSize: 14,
+            fontFamily: "Inter, system-ui, sans-serif",
+            fontSize: 10,
             fontWeight: 700,
-            color: "var(--c-primary)",
-            margin: "0 0 10px",
-            letterSpacing: 0.3,
+            color: "var(--c-text-muted)",
+            margin: "0 0 8px",
+            letterSpacing: 2,
             textTransform: "uppercase",
-            opacity: 0.85,
           }}
         >
-          Belanja Berdasarkan Kategori
+          Belanja per kategori
         </h2>
         <div
           className="safiya-cat-tiles"
@@ -51,6 +50,7 @@ export function SafiyaCategoryTiles() {
             display: "grid",
             gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
             gap: 10,
+            maxWidth: 720,
           }}
         >
           {TILES.map((t) => {
@@ -74,9 +74,8 @@ export function SafiyaCategoryTiles() {
                   borderRadius: 12,
                   textDecoration: "none",
                   textAlign: "center",
-                  aspectRatio: "1 / 1",
-                  maxWidth: 140,
-                  justifySelf: "center",
+                  aspectRatio: "1.05 / 1",
+                  maxWidth: 130,
                   width: "100%",
                 }}
               >
