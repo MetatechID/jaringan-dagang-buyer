@@ -713,22 +713,21 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
                     onClick={(e) => { e.stopPropagation(); publish(d.branch); }}
                     disabled={busy === "publish"}
                     style={{
-                      marginTop: 10,
+                      marginTop: 12,
                       width: "100%",
-                      padding: "10px 14px",
-                      background: "#16a34a",
-                      color: "#fff",
-                      border: 0,
+                      padding: "9px 14px",
+                      background: busy === "publish" ? "rgba(251,191,36,0.18)" : "#FBBF24",
+                      color: busy === "publish" ? "#fbbf24" : "#3A2A0A",
+                      border: "1px solid rgba(251,191,36,0.55)",
                       borderRadius: 8,
-                      fontWeight: 800,
-                      fontSize: 13,
+                      fontWeight: 700,
+                      fontSize: 12.5,
                       cursor: busy === "publish" ? "default" : "pointer",
-                      letterSpacing: 0.3,
-                      boxShadow: "0 4px 14px rgba(22,163,74,0.30)",
-                      opacity: busy === "publish" ? 0.7 : 1,
+                      letterSpacing: 0.2,
+                      transition: "background 120ms ease",
                     }}
                   >
-                    {busy === "publish" ? "Menaikkan…" : "🚀 Naikkan ke Produksi"}
+                    {busy === "publish" ? "Menaikkan…" : "Naikkan ke Produksi"}
                   </button>
                   <div style={{ display: "flex", gap: 12, marginTop: 8, fontSize: 11, alignItems: "center" }} onClick={(e) => e.stopPropagation()}>
                     {d.preview_url ? (
