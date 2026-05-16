@@ -239,6 +239,60 @@ class SeedIn(BaseModel):
     role: StoreRole = StoreRole.OWNER
 
 
+@router.get("/api/v1/identity/overview")
+async def identity_overview(
+    _: None = Depends(require_admin_token),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    """Observability: the whole identity + ACL state in one call.
+
+    Who has signed in (profiles), who is super admin, every store membership
+    and whether it's still a pending invite. Admin-token gated.
+    """
+    profiles = (
+        await db.execute(select(BeliAmanProfile).order_by(BeliAmanProfile.created_at))
+    ).scalars().all()
+    memberships = (
+        await db.execute(
+            select(StoreMembership, BeliAmanProfile)
+            .outerjoin(BeliAmanProfile, BeliAmanProfile.id == StoreMembership.profile_id)
+            .order_by(StoreMembership.created_at)
+        )
+    ).all()
+    return {
+        "identity_provider": "beli-aman-bap",
+        "firebase_project": "beli-aman-prod",
+        "counts": {
+            "profiles": len(profiles),
+            "super_admins": sum(1 for p in profiles if p.is_super_admin),
+            "memberships": len(memberships),
+            "pending_invites": sum(1 for (m, _p) in memberships if m.profile_id is None),
+        },
+        "profiles": [
+            {
+                "email": p.email,
+                "display_name": p.display_name,
+                "is_super_admin": p.is_super_admin,
+                "last_seen_at": p.last_seen_at.isoformat() if p.last_seen_at else None,
+                "created_at": p.created_at.isoformat() if p.created_at else None,
+            }
+            for p in profiles
+        ],
+        "memberships": [
+            {
+                "email": m.invited_email,
+                "store_id": m.store_id,
+                "store_slug": m.store_slug,
+                "role": m.role.value if isinstance(m.role, StoreRole) else m.role,
+                "status": "active" if m.profile_id else "pending-invite",
+                "linked_profile": (p.email if p else None),
+                "accepted_at": m.accepted_at.isoformat() if m.accepted_at else None,
+            }
+            for (m, p) in memberships
+        ],
+    }
+
+
 @router.post("/api/v1/identity/seed-membership")
 async def seed_membership(
     body: SeedIn,
