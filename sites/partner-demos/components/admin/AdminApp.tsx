@@ -116,16 +116,21 @@ function newBranchName(): string {
   return `vibe/${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}-${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}`;
 }
 
+const CHAT_LS_KEY = (slug: string) => `vibe-chat:${slug}`;
+const WELCOME_MSG = (brandName: string): ChatMessage => ({
+  role: "assistant",
+  content: `Halo! Saya editor vibe untuk ${brandName}. Bilang aja apa yang mau diubah — warna brand, hero, tambah produk, pasang Google Analytics — dan saya bikinin preview deploynya.`,
+  // Fixed ts so localStorage hydration is identical to fresh init and
+  // doesn't trigger a React hydration mismatch on first paint.
+  ts: 0,
+});
+
 export function AdminApp({ brandSlug }: { brandSlug: string }) {
   const { signedIn, signInIdentity, email, displayName, brandTheme } = useBeliAman();
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: "assistant",
-      content:
-        "Halo! Saya editor vibe untuk Safiya Food. Bilang aja apa yang mau diubah — warna brand, hero, tambah produk, pasang Google Analytics — dan saya bikinin preview deploynya.",
-      ts: Date.now(),
-    },
-  ]);
+  // The default welcome message renders identically on server + first client
+  // paint. After mount, a useEffect rehydrates from localStorage if the
+  // tenant has prior chat history (avoids a server/client mismatch).
+  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MSG(brandSlug)]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState<null | "chat" | "apply" | "publish" | "revert">(null);
   const [err, setErr] = useState<string | null>(null);
@@ -176,6 +181,30 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages.length, busy]);
 
+  // Hydrate messages from localStorage on mount (post-hydration so we don't
+  // race React's reconciliation). The default WELCOME_MSG handles SSR.
+  const hydratedRef = useRef(false);
+  useEffect(() => {
+    if (hydratedRef.current) return;
+    hydratedRef.current = true;
+    try {
+      const raw = window.localStorage.getItem(CHAT_LS_KEY(brandSlug));
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as ChatMessage[];
+      if (Array.isArray(parsed) && parsed.length > 0) setMessages(parsed);
+    } catch {/* quota or private-mode — non-fatal */}
+  }, [brandSlug]);
+
+  // Persist chat history per tenant (cap last 100 turns). Skip the first
+  // render so we don't clobber a richer history with the default welcome.
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    try {
+      const trimmed = messages.length > 100 ? messages.slice(-100) : messages;
+      window.localStorage.setItem(CHAT_LS_KEY(brandSlug), JSON.stringify(trimmed));
+    } catch {/* quota or private-mode — non-fatal */}
+  }, [messages, brandSlug]);
+
   // Mirror the active draft to ?draft=BRANCH so the marketing team can refresh
   // or share the URL and land back on the same preview.
   useEffect(() => {
@@ -189,6 +218,22 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
   // pollPreview + applyChanges are declared BEFORE send so send can call
   // applyChanges directly (auto-apply on chat reply).
   const pollPreview = useCallback(async (branch: string) => {
+    // Peek once before showing the spinner. If the deploy is already READY
+    // (the common case when hydrating a draft via ?draft=BRANCH on a
+    // refresh), skip the loading state entirely and surface the iframe
+    // immediately.
+    try {
+      const r = await api<{ deployment: null | { url: string; ready: boolean; state: string } }>(
+        `/api/admin/preview?branch=${encodeURIComponent(branch)}`,
+      );
+      if (r.deployment?.ready) {
+        setPreviewUrl(`${r.deployment.url}/${brandSlug}`);
+        setPreviewBuilding(false);
+        return;
+      }
+    } catch {
+      /* swallow — fall through to the spinner + poll loop */
+    }
     setPreviewBuilding(true);
     const deadline = Date.now() + 3 * 60 * 1000;
     while (Date.now() < deadline) {
