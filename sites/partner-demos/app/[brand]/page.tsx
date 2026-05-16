@@ -6,6 +6,9 @@ import { resolveBrand } from "@/lib/brands";
 import { ProductCard } from "@/components/ProductCard";
 import { AntarestarHero } from "@/components/AntarestarHero";
 import { SafiyaHero } from "@/components/SafiyaHero";
+import { SafiyaHeroCarousel } from "@/components/SafiyaHeroCarousel";
+import { SafiyaCategoryTiles } from "@/components/SafiyaCategoryTiles";
+import { SafiyaProductRail } from "@/components/SafiyaProductRail";
 import { JsonLd } from "@/components/JsonLd";
 import {
   buildBrandMetadata,
@@ -83,12 +86,6 @@ export default function BrandHomePage({ params }: { params: { brand: string } })
     const grouped = groupByCategory(brand.sampleProducts || []);
     return (
       <div className="safiya-home">
-        <style>{`
-          @media (max-width: 768px) {
-            .safiya-home section { padding-left: 12px !important; padding-right: 12px !important; }
-            .safiya-product-grid { gap: 10px !important; }
-          }
-        `}</style>
         <JsonLd
           data={[
             organizationJsonLd(brand, params.brand),
@@ -99,75 +96,23 @@ export default function BrandHomePage({ params }: { params: { brand: string } })
             ]),
           ]}
         />
-        <SafiyaHero />
-        {SAFIYA_CATEGORY_ORDER.map((category, idx) => {
+        {/* @vibe:hero — small auto-rotating banner carousel; Sayurbox / Astro pattern. */}
+        <SafiyaHeroCarousel />
+        {/* @vibe:after-hero — category tile grid (5 icons). */}
+        <SafiyaCategoryTiles />
+        {SAFIYA_CATEGORY_ORDER.map((category) => {
           const items = grouped[category];
           if (!items || items.length === 0) return null;
           const copy = SAFIYA_CATEGORY_COPY[category] || { tagline: "", anchor: category.toLowerCase() };
-          // First category renders normally; subsequent sections skip layout/
-          // paint until they're near the viewport. Browser uses
-          // contain-intrinsic-size to keep the scroll bar accurate while the
-          // content is unrendered.
-          const lazy = idx > 0;
           return (
-            <section
+            <SafiyaProductRail
               key={category}
-              id={copy.anchor}
-              style={{
-                padding: "56px 24px",
-                scrollMarginTop: 80,
-                ...(lazy
-                  ? ({
-                      contentVisibility: "auto",
-                      containIntrinsicSize: "900px",
-                    } as React.CSSProperties)
-                  : {}),
-              }}
-            >
-              <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-                <div style={{ marginBottom: 28 }}>
-                  <span
-                    style={{
-                      fontFamily: "Inter, system-ui, sans-serif",
-                      fontSize: 11,
-                      fontWeight: 600,
-                      letterSpacing: "0.22em",
-                      textTransform: "uppercase",
-                      color: brand.colors.secondary,
-                    }}
-                  >
-                    Koleksi
-                  </span>
-                  <h2
-                    style={{
-                      fontFamily: brand.fonts.heading,
-                      fontSize: "clamp(26px, 3.6vw, 38px)",
-                      fontWeight: 700,
-                      margin: "4px 0 6px",
-                      color: brand.colors.primary,
-                      letterSpacing: "-0.01em",
-                    }}
-                  >
-                    {category}
-                  </h2>
-                  <p style={{ margin: 0, fontSize: 15, color: "var(--c-text-muted)", maxWidth: 540 }}>
-                    {copy.tagline}
-                  </p>
-                </div>
-                <div
-                  className="safiya-product-grid"
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-                    gap: 14,
-                  }}
-                >
-                  {items.map((p) => (
-                    <ProductCard key={p.sku} brandSlug={params.brand} product={p} />
-                  ))}
-                </div>
-              </div>
-            </section>
+              brandSlug={params.brand}
+              title={category}
+              tagline={copy.tagline}
+              anchor={copy.anchor}
+              items={items}
+            />
           );
         })}
 

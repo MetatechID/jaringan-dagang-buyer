@@ -8,12 +8,23 @@ import { useCart } from "@/lib/cart";
 
 const ANTARESTAR_NAV = ["Apparel", "Bags", "Camping", "Footwear", "Jacket", "Sport"];
 
+// Top utility nav for Safiya. Brand-category navigation moved to the in-page
+// tile grid + the mobile quick-jump strip — top nav is now utility links
+// (Sayurbox / Astro pattern).
 const SAFIYA_NAV: Array<{ label: string; href: string }> = [
+  { label: "Cek Pesanan", href: "/orders" },
+  { label: "Promo", href: "/safiyafood/promo" },
+  { label: "Bantuan", href: "/safiyafood#bantuan" },
+];
+
+// Mobile-only category quick-jump pill strip (still useful for scroll
+// navigation from the top of the page).
+const SAFIYA_MOBILE_QUICKJUMP: Array<{ label: string; href: string }> = [
   { label: "Kurma", href: "/safiyafood#kurma" },
   { label: "Sereal", href: "/safiyafood#sereal" },
   { label: "Pantry", href: "/safiyafood#pantry" },
   { label: "Madu", href: "/safiyafood#madu" },
-  { label: "Ramadhan", href: "/safiyafood/promo" },
+  { label: "Promo", href: "/safiyafood/promo" },
 ];
 
 function CartBadge({ brandSlug }: { brandSlug: string }) {
@@ -223,10 +234,10 @@ export function BrandHeader() {
                     href={item.href}
                     className="brand-header-link"
                     style={{
-                      color: isPromo ? brandTheme.colors.primary : "inherit",
+                      color: isPromo ? brandTheme.colors.primary : "var(--c-text-muted)",
                       textDecoration: "none",
                       fontWeight: 600,
-                      letterSpacing: 0.4,
+                      letterSpacing: 0.3,
                       ...(isPromo ? { fontStyle: "italic" } : {}),
                     }}
                   >
@@ -297,7 +308,7 @@ export function BrandHeader() {
             scrollbarWidth: "none",
           }}
         >
-          {SAFIYA_NAV.map((item) => {
+          {SAFIYA_MOBILE_QUICKJUMP.map((item) => {
             const isPromo = item.href.endsWith("/promo");
             return (
               <a

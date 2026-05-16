@@ -97,7 +97,13 @@ export default function RootLayout({
   ].join(" ");
   return (
     <html lang="id" className={fontVars}>
-      <body>{children}</body>
+      <head>
+        {/* @vibe:analytics-head — Google Analytics, Facebook Pixel, TikTok Pixel snippets injected here */}
+      </head>
+      <body>
+        {/* @vibe:analytics-body — pixel <noscript> fallbacks, DataLayer pushes */}
+        {children}
+      </body>
     </html>
   );
 }

@@ -11,20 +11,17 @@
   </linearGradient>
 </defs>
 <rect width="800" height="800" fill="url(#bgGrad)"/>
-<!-- subtle pattern -->
 <g opacity="0.06" fill="#6B2C1A">
   <circle cx="80" cy="80" r="40"/>
   <circle cx="720" cy="120" r="60"/>
   <circle cx="120" cy="700" r="50"/>
   <circle cx="680" cy="680" r="40"/>
 </g>
-<!-- palm leaves -->
 <g transform="translate(110,640) rotate(-20)">
   <path d="M 0 0 Q 30 -80 0 -160 Q -30 -80 0 0 Z" fill="url(#palmLeaf)"/>
   <path d="M 0 -160 Q 60 -200 80 -260" stroke="url(#palmLeaf)" stroke-width="6" fill="none"/>
   <path d="M 0 -160 Q -60 -200 -80 -260" stroke="url(#palmLeaf)" stroke-width="6" fill="none"/>
 </g>
-<!-- centerpiece kurma jar -->
 <g transform="translate(560,420)">
   <ellipse cx="0" cy="180" rx="120" ry="14" fill="#000" opacity="0.10"/>
   <rect x="-100" y="-180" width="200" height="40" rx="10" fill="#D4A24C" stroke="#2A1810" stroke-width="2"/>
