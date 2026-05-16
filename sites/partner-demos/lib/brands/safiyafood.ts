@@ -5,7 +5,7 @@ import safiyaCatalog from "./safiyafood-catalog.json";
 export const safiyafood: BrandTheme = {
   slug: "safiyafood",
   name: "Safiya Food",
-  tagline: "Authentic premium · healthy · halal · since 2018",
+  tagline: "Sehat dari kebun, sampai ke meja Anda.",
   fonts: {
     heading: "var(--font-playfair), 'Playfair Display', Georgia, serif",
     body: "var(--font-inter), Inter, system-ui, sans-serif",
