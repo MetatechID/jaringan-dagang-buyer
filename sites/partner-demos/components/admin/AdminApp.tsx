@@ -91,13 +91,26 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
   const [draftBranch, setDraftBranch] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [commits, setCommits] = useState<CommitWithFunnel[]>([]);
+  const [whoami, setWhoami] = useState<null | {
+    ok: boolean;
+    reason: string | null;
+    seen_email: string | null;
+    allowlist: string[] | null;
+  }>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Load history once signed in.
+  // Once signed in, fetch /whoami so we can show exactly what the server saw
+  // — and only then try to load /history.
   useEffect(() => {
     if (!signedIn) return;
-    api<{ commits: CommitWithFunnel[] }>("/api/admin/history")
-      .then((r) => setCommits(r.commits))
+    api<{ ok: boolean; reason: string | null; seen_email: string | null; allowlist: string[] | null }>(
+      "/api/admin/whoami",
+    )
+      .then((w) => {
+        setWhoami(w);
+        if (!w.ok) return;
+        return api<{ commits: CommitWithFunnel[] }>("/api/admin/history").then((r) => setCommits(r.commits));
+      })
       .catch((e) => setErr(String(e)));
   }, [signedIn]);
 
@@ -242,6 +255,21 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
   if (!signedIn) {
     return (
       <SignInGate brandSlug={brandSlug} brandPrimary={brandTheme.colors.primary} onSignIn={signInIdentity} />
+    );
+  }
+
+  // Signed in but the server's auth layer rejected us — show a friendly
+  // breakdown so the user knows exactly what email was seen and which
+  // allowlist they're missing from.
+  if (whoami && !whoami.ok) {
+    return (
+      <NotAllowedPanel
+        brandSlug={brandSlug}
+        accent={brandTheme.colors.primary}
+        seenEmail={whoami.seen_email}
+        allowlist={whoami.allowlist}
+        reason={whoami.reason}
+      />
     );
   }
 
@@ -504,6 +532,67 @@ function ChatBubble({
           ) : null}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function NotAllowedPanel({
+  brandSlug,
+  accent,
+  seenEmail,
+  allowlist,
+  reason,
+}: {
+  brandSlug: string;
+  accent: string;
+  seenEmail: string | null;
+  allowlist: string[] | null;
+  reason: string | null;
+}) {
+  return (
+    <div style={{ minHeight: "calc(100vh - 64px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 32 }}>
+      <div style={{ maxWidth: 520 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: accent, textTransform: "uppercase", marginBottom: 10 }}>
+          Akses Ditolak
+        </div>
+        <h1 style={{ fontFamily: "var(--font-jakarta), Inter, sans-serif", fontSize: 26, fontWeight: 800, margin: 0, color: accent }}>
+          Email kamu belum terdaftar di Vibe Editor.
+        </h1>
+        <p style={{ marginTop: 12, color: "var(--c-text-muted)", fontSize: 14, lineHeight: 1.55 }}>
+          Kami berhasil membaca akun Beli Aman kamu, tapi belum ada di daftar
+          admin storefront ini.
+        </p>
+        <div style={{ marginTop: 18, padding: 14, background: "var(--c-surface)", borderRadius: 10, border: "1px solid rgba(15,23,42,0.08)", fontSize: 13, lineHeight: 1.7 }}>
+          <div>Email kamu (dari Google sign-in): <strong style={{ fontFamily: "ui-monospace, monospace" }}>{seenEmail ?? "(tidak terbaca)"}</strong></div>
+          <div>
+            Daftar admin yang diizinkan:{" "}
+            <strong style={{ fontFamily: "ui-monospace, monospace" }}>
+              {allowlist && allowlist.length ? allowlist.join(", ") : "(kosong)"}
+            </strong>
+          </div>
+          {reason ? <div style={{ marginTop: 4, color: "var(--c-text-muted)" }}>Reason: {reason}</div> : null}
+        </div>
+        <p style={{ marginTop: 14, fontSize: 12, color: "var(--c-text-muted)" }}>
+          Cara fix: minta admin tambahkan email kamu ke <code>ADMIN_EMAILS</code> di Vercel env (Production) untuk project <code>beli-aman-storefronts</code>.
+        </p>
+        <div style={{ marginTop: 20 }}>
+          <a
+            href={`/${brandSlug}`}
+            style={{
+              display: "inline-block",
+              padding: "10px 18px",
+              background: accent,
+              color: "#fff",
+              borderRadius: 999,
+              fontWeight: 700,
+              fontSize: 13,
+              textDecoration: "none",
+            }}
+          >
+            ← Kembali ke toko
+          </a>
+        </div>
+      </div>
     </div>
   );
 }

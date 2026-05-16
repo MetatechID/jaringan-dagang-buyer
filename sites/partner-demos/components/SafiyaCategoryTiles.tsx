@@ -49,8 +49,7 @@ export function SafiyaCategoryTiles() {
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-            gap: 10,
-            maxWidth: 720,
+            gap: 12,
           }}
         >
           {TILES.map((t) => {
@@ -74,9 +73,10 @@ export function SafiyaCategoryTiles() {
                   borderRadius: 12,
                   textDecoration: "none",
                   textAlign: "center",
-                  aspectRatio: "1.05 / 1",
-                  maxWidth: 130,
+                  aspectRatio: "1.1 / 1",
+                  maxWidth: 168,
                   width: "100%",
+                  justifySelf: "stretch",
                 }}
               >
                 <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>{t.icon}</span>
