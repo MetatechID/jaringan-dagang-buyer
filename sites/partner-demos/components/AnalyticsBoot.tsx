@@ -1,19 +1,25 @@
 "use client";
 
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 import { trackEvent } from "@/lib/analytics";
 
 /** Mounted once per brand layout. Tracks a `page_view` whenever the route
- *  changes — including soft navigations between PDPs / cart / promo. */
+ *  changes — including soft navigations between PDPs / cart / promo.
+ *
+ *  Deliberately avoids `useSearchParams()` (which forces dynamic rendering
+ *  and bails out of static prerender) — we read window.location.search in
+ *  the effect instead, which is client-only anyway. */
 export function AnalyticsBoot({ brandSlug }: { brandSlug: string }) {
   const pathname = usePathname();
-  const search = useSearchParams();
   useEffect(() => {
     if (!pathname) return;
     const page = classifyPath(brandSlug, pathname);
-    const q = search?.get("q") ?? null;
+    const q =
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get("q")
+        : null;
     trackEvent("page_view", brandSlug, {
       page,
       path: pathname,
@@ -29,7 +35,7 @@ export function AnalyticsBoot({ brandSlug }: { brandSlug: string }) {
     if (page === "promo") {
       trackEvent("view_promo", brandSlug);
     }
-  }, [brandSlug, pathname, search]);
+  }, [brandSlug, pathname]);
   return null;
 }
 
