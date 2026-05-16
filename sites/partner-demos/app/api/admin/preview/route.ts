@@ -18,9 +18,10 @@ export async function GET(req: NextRequest) {
     // Primary: GitHub PR-comment scrape (works without a Vercel API token).
     // Fallback: Vercel API (which currently 403s — leaving in place for when
     // the token gets renewed).
-    let dep = await previewFromPrComment(branch).then((p) =>
-      p ? { url: p.url, ready: p.ready, state: p.ready ? "READY" : "BUILDING", inspector_url: undefined } : null,
-    );
+    type Dep = { url: string; ready: boolean; state: string; inspector_url?: string };
+    let dep: Dep | null = null;
+    const pr = await previewFromPrComment(branch);
+    if (pr) dep = { url: pr.url, ready: pr.ready, state: pr.ready ? "READY" : "BUILDING" };
     if (!dep) {
       const v = await latestDeploymentForBranch(branch, sha);
       if (v) dep = { url: v.url, ready: v.ready, state: v.state, inspector_url: v.inspector_url };
