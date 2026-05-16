@@ -14,8 +14,18 @@ from deps import get_current_profile
 from models.order import Order, OrderState
 from models.profile import BeliAmanProfile
 from services import escrow as escrow_service
-from services import beckn_orders
 from services.state_machine import StateTransitionError, lock_order_for_update, transition
+
+# beckn_orders pulls in pynacl-backed signer code; import lazily so that a
+# missing dep can't crash the entire BAP at module load (kept whole rest of
+# the API alive when pynacl was missing from requirements).
+try:
+    from services import beckn_orders  # type: ignore
+    _BECKN_AVAILABLE = True
+except Exception as _beckn_err:  # noqa: BLE001
+    beckn_orders = None  # type: ignore
+    _BECKN_AVAILABLE = False
+    _BECKN_IMPORT_ERR = _beckn_err
 
 router = APIRouter(prefix="/api/v1/orders", tags=["payments"])
 
@@ -51,24 +61,29 @@ async def confirm_payment(
 
     # Best-effort: send Beckn /confirm to seller's BPP. Don't fail the request
     # if this fails — seller dashboard just won't show the order. Replaces the
-    # legacy seller_bridge HTTP shortcut.
-    await beckn_orders.confirm_order(order_dict={
-        "order_id": order.id,
-        "bap_id": order.bap_id,
-        "bpp_id": order.bpp_id,
-        "buyer": {
-            "id": profile.id,
-            "email": profile.email,
-            "display_name": profile.display_name,
-            "photo_url": profile.photo_url,
-        },
-        "items": order.items,
-        "subtotal_idr": order.subtotal_idr,
-        "shipping_idr": order.shipping_idr,
-        "total_idr": order.total_idr,
-        "shipping_address": order.shipping_address,
-        "escrow_status": "held",
-    })
+    # legacy seller_bridge HTTP shortcut. Skipped if pynacl isn't installed.
+    if _BECKN_AVAILABLE and beckn_orders is not None:
+        try:
+            await beckn_orders.confirm_order(order_dict={
+                "order_id": order.id,
+                "bap_id": order.bap_id,
+                "bpp_id": order.bpp_id,
+                "buyer": {
+                    "id": profile.id,
+                    "email": profile.email,
+                    "display_name": profile.display_name,
+                    "photo_url": profile.photo_url,
+                },
+                "items": order.items,
+                "subtotal_idr": order.subtotal_idr,
+                "shipping_idr": order.shipping_idr,
+                "total_idr": order.total_idr,
+                "shipping_address": order.shipping_address,
+                "escrow_status": "held",
+            })
+        except Exception:
+            # Beckn confirm failures should never fail the user's payment.
+            pass
 
     return _short(order, message="ESCROW_HELD")
 
