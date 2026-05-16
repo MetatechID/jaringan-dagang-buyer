@@ -46,12 +46,12 @@ export function SafiyaProductRail({
           <div style={{ display: "flex", alignItems: "baseline", gap: 10, minWidth: 0, flexWrap: "wrap" }}>
             <h2
               style={{
-                fontFamily: "var(--font-playfair), Georgia, serif",
+                fontFamily: "var(--font-jakarta), Inter, system-ui, sans-serif",
                 fontSize: "clamp(17px, 1.8vw, 20px)",
-                fontWeight: 700,
+                fontWeight: 800,
                 color: "var(--c-primary)",
                 margin: 0,
-                letterSpacing: 0.2,
+                letterSpacing: -0.2,
               }}
             >
               {title}
@@ -74,23 +74,27 @@ export function SafiyaProductRail({
             </Link>
           ) : null}
         </div>
-      </div>
 
-      <div
-        className="safiya-rail-scroller"
-        style={{
-          display: "flex",
-          gap: 12,
-          overflowX: "auto",
-          padding: "2px 16px 12px",
-          scrollSnapType: "x mandatory",
-          WebkitOverflowScrolling: "touch",
-          scrollbarWidth: "none",
-        }}
-      >
-        {items.map((p) => (
-          <RailCard key={p.slug} brandSlug={brandSlug} product={p} />
-        ))}
+        {/* The scroller bleeds 16px beyond the wrapper on both sides so the
+            first/last card can scroll into the gutter, but its INNER padding
+            of 16px puts the first card exactly under the heading's left edge. */}
+        <div
+          className="safiya-rail-scroller"
+          style={{
+            display: "flex",
+            gap: 12,
+            overflowX: "auto",
+            margin: "0 -16px",
+            padding: "2px 16px 12px",
+            scrollSnapType: "x mandatory",
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "none",
+          }}
+        >
+          {items.map((p) => (
+            <RailCard key={p.slug} brandSlug={brandSlug} product={p} />
+          ))}
+        </div>
       </div>
       <style>{`
         .safiya-rail-scroller::-webkit-scrollbar { display: none; }

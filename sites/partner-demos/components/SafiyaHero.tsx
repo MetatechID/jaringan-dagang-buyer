@@ -69,7 +69,7 @@ export function SafiyaHero() {
           </span>
           <h1
             style={{
-              fontFamily: "var(--font-playfair), 'Playfair Display', Georgia, serif",
+              fontFamily: "var(--font-jakarta), Inter, system-ui, sans-serif",
               fontSize: "clamp(40px, 6vw, 72px)",
               fontWeight: 700,
               lineHeight: 1.05,

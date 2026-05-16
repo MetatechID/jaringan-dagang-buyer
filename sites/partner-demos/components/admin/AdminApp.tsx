@@ -515,7 +515,7 @@ function SignInGate({ brandSlug, brandPrimary, onSignIn }: { brandSlug: string; 
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: brandPrimary, textTransform: "uppercase", marginBottom: 10 }}>
           Vibe Editor
         </div>
-        <h1 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 28, fontWeight: 700, margin: 0, color: brandPrimary }}>
+        <h1 style={{ fontFamily: "var(--font-jakarta), Inter, system-ui, sans-serif", fontSize: 28, fontWeight: 700, margin: 0, color: brandPrimary }}>
           Edit toko Anda dengan cara ngobrol.
         </h1>
         <p style={{ marginTop: 12, color: "var(--c-text-muted)", fontSize: 14, lineHeight: 1.55 }}>

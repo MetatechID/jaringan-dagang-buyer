@@ -136,7 +136,7 @@ export function SafiyaHeroCarousel() {
           </span>
           <h1
             style={{
-              fontFamily: "var(--font-playfair), 'Playfair Display', Georgia, serif",
+              fontFamily: "var(--font-jakarta), 'Playfair Display', Georgia, serif",
               fontSize: "clamp(22px, 4vw, 38px)",
               fontWeight: 700,
               lineHeight: 1.12,

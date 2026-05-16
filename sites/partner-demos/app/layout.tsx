@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import {
   Inter,
+  Plus_Jakarta_Sans,
   Playfair_Display,
   Montserrat,
   Poppins,
@@ -22,6 +23,16 @@ const inter = Inter({
   weight: ["400", "500", "600", "700", "800"],
   display: "swap",
   variable: "--font-inter",
+});
+
+// Plus Jakarta Sans — Indonesian-tuned sans, the Sayurbox / Tokopedia /
+// Astronauts shop typeface. Headings + body both use it for the friendly
+// modern feel.
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+  variable: "--font-jakarta",
 });
 
 const playfair = Playfair_Display({
@@ -90,6 +101,7 @@ export default function RootLayout({
 }) {
   const fontVars = [
     inter.variable,
+    jakarta.variable,
     playfair.variable,
     montserrat.variable,
     poppins.variable,
