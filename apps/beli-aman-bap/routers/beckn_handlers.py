@@ -166,9 +166,11 @@ async def handle_on_search(
                 for tag in item.get("tags") or []:
                     if tag.get("code") == "variant":
                         for kv in tag.get("list") or []:
-                            if kv.get("code") == "name":
+                            # Beckn TagValue: code lives under descriptor.code
+                            code = kv.get("code") or (kv.get("descriptor") or {}).get("code")
+                            if code == "name":
                                 variant_name = kv.get("value")
-                            elif kv.get("code") == "value":
+                            elif code == "value":
                                 variant_value = kv.get("value")
                 try:
                     price = float(price_obj.get("value") or 0)
