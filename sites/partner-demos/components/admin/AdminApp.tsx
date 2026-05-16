@@ -129,20 +129,58 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
       .catch(() => {/* drafts optional */});
   }, []);
 
-  // Once signed in, fetch /whoami so we can show what the server saw
-  // (used by the access-denied screen) and load the draft list.
+  // Once signed in, resolve access. Source of truth = Beli Aman Identity
+  // Provider (StoreMembership): one "Sign in with Beli Aman" identity, one
+  // ACL, shared with the seller dashboard. The legacy /api/admin/whoami
+  // allowlist stays as a fallback so nothing breaks if the IdP is unreachable.
   useEffect(() => {
     if (!signedIn) return;
-    api<{ ok: boolean; reason: string | null; seen_email: string | null; allowlist: string[] | null }>(
-      "/api/admin/whoami",
-    )
-      .then((w) => {
-        setWhoami(w);
-        if (!w.ok) return;
-        refreshDrafts();
-      })
-      .catch((e) => setErr(String(e)));
-  }, [signedIn, refreshDrafts]);
+
+    const IDP =
+      process.env.NEXT_PUBLIC_IDENTITY_API_URL ||
+      "https://api.beli-aman.metatech.id";
+
+    (async () => {
+      // 1. Ask the Beli Aman IdP whether this person can admin this toko.
+      let idpAllowed = false;
+      let idpRole: string | null = null;
+      try {
+        const token = await getIdToken();
+        if (token) {
+          const r = await fetch(
+            `${IDP}/api/v1/me/can-admin?slug=${encodeURIComponent(brandSlug)}`,
+            { headers: { Authorization: `Bearer ${token}` } },
+          );
+          if (r.ok) {
+            const j = await r.json();
+            idpAllowed = !!j.can_admin;
+            idpRole = j.role ?? null;
+          }
+        }
+      } catch {
+        /* IdP unreachable — fall back to legacy allowlist below */
+      }
+
+      // 2. Legacy allowlist whoami (also gives seen_email for the denied screen)
+      let legacy: { ok: boolean; reason: string | null; seen_email: string | null; allowlist: string[] | null } = {
+        ok: false, reason: null, seen_email: null, allowlist: null,
+      };
+      try {
+        legacy = await api("/api/admin/whoami");
+      } catch (e) {
+        setErr(String(e));
+      }
+
+      const ok = idpAllowed || legacy.ok;
+      setWhoami({
+        ok,
+        reason: ok ? null : (legacy.reason || "not a member of this store"),
+        seen_email: legacy.seen_email,
+        allowlist: legacy.allowlist,
+      });
+      if (ok) refreshDrafts();
+    })();
+  }, [signedIn, brandSlug, refreshDrafts]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
