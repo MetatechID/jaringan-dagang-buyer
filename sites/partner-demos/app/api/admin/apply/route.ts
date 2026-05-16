@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     try {
       // Give Vercel a 1.5s head-start so the deployment is registered.
       await new Promise((r) => setTimeout(r, 1500));
-      const dep = await latestDeploymentForBranch(body.branch);
+      const dep = await latestDeploymentForBranch(body.branch, sha);
       if (dep) previewUrl = `https://${dep.url}/safiyafood`;
     } catch {
       /* preview is optional; PR link is enough */

@@ -97,21 +97,7 @@ export async function verifyDomain(name: string): Promise<ProjectDomain | { erro
   };
 }
 
-export async function latestDeploymentForBranch(branch: string): Promise<BranchDeployment | null> {
-  if (!TOKEN || !PROJECT_ID) return null;
-  const url = new URL("https://api.vercel.com/v6/deployments");
-  url.searchParams.set("projectId", PROJECT_ID);
-  if (TEAM_ID) url.searchParams.set("teamId", TEAM_ID);
-  url.searchParams.set("limit", "1");
-  url.searchParams.set("meta-githubCommitRef", branch);
-  const res = await fetch(url.toString(), {
-    headers: { Authorization: `Bearer ${TOKEN}` },
-    cache: "no-store",
-  });
-  if (!res.ok) return null;
-  const data = (await res.json()) as { deployments?: any[] };
-  const d = data.deployments?.[0];
-  if (!d) return null;
+function shape(d: any): BranchDeployment {
   return {
     url: d.url,
     state: d.readyState ?? d.state ?? "UNKNOWN",
@@ -119,4 +105,70 @@ export async function latestDeploymentForBranch(branch: string): Promise<BranchD
     created_at: d.created ?? Date.now(),
     inspector_url: d.inspectorUrl,
   };
+}
+
+/** Find the most recent deployment for a given git branch.
+ *
+ *  Vercel's `meta-githubCommitRef` filter is the documented path but it
+ *  silently returns nothing for some branches (observed in prod: branches
+ *  created via the GitHub contents API don't always get the metadata key
+ *  Vercel filters on). We try three strategies in order:
+ *    1. meta-githubCommitRef filter (the happy path)
+ *    2. meta-githubCommitSha filter when a SHA is provided
+ *    3. List recent deploys and match gitSource.ref ourselves
+ */
+export async function latestDeploymentForBranch(
+  branch: string,
+  sha?: string,
+): Promise<BranchDeployment | null> {
+  if (!TOKEN || !PROJECT_ID) return null;
+  const base = new URL("https://api.vercel.com/v6/deployments");
+  base.searchParams.set("projectId", PROJECT_ID);
+  if (TEAM_ID) base.searchParams.set("teamId", TEAM_ID);
+
+  const fetchJson = async (u: URL) => {
+    const res = await fetch(u.toString(), {
+      headers: { Authorization: `Bearer ${TOKEN}` },
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as { deployments?: any[] };
+  };
+
+  // (1) meta-githubCommitRef
+  {
+    const u = new URL(base.toString());
+    u.searchParams.set("limit", "1");
+    u.searchParams.set("meta-githubCommitRef", branch);
+    const data = await fetchJson(u);
+    if (data?.deployments?.[0]) return shape(data.deployments[0]);
+  }
+
+  // (2) meta-githubCommitSha
+  if (sha) {
+    const u = new URL(base.toString());
+    u.searchParams.set("limit", "1");
+    u.searchParams.set("meta-githubCommitSha", sha);
+    const data = await fetchJson(u);
+    if (data?.deployments?.[0]) return shape(data.deployments[0]);
+  }
+
+  // (3) Scan recent deploys and match gitSource.ref or meta.branch
+  {
+    const u = new URL(base.toString());
+    u.searchParams.set("limit", "50");
+    const data = await fetchJson(u);
+    for (const d of data?.deployments ?? []) {
+      const refs = [
+        d?.gitSource?.ref,
+        d?.meta?.githubCommitRef,
+        d?.meta?.branch,
+        d?.meta?.branchName,
+      ].filter(Boolean);
+      if (refs.includes(branch)) return shape(d);
+      if (sha && d?.meta?.githubCommitSha === sha) return shape(d);
+    }
+  }
+
+  return null;
 }

@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
       drafts.map(async (d) => {
         let preview_url: string | null = null;
         try {
-          const dep = await latestDeploymentForBranch(d.branch);
+          const dep = await latestDeploymentForBranch(d.branch, d.head_sha);
           if (dep) preview_url = `https://${dep.url}/safiyafood`;
         } catch {
           /* preview is optional */
