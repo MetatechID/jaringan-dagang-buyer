@@ -10,6 +10,7 @@ Later phases will wire on_select/on_init/on_confirm/on_status/on_update.
 from __future__ import annotations
 
 import logging
+import uuid
 from datetime import datetime, timezone
 from typing import Any
 
@@ -109,15 +110,11 @@ async def handle_on_search(
                 store.bpp_uri = bpp_uri
         store.last_pushed_at = now
 
-        # Full replace of this store's products (cascade deletes skus + images)
-        existing = (
-            await db.execute(
-                select(MirrorProduct).where(MirrorProduct.store_id == store.id)
-            )
-        ).scalars().all()
-        for ep in existing:
-            await db.delete(ep)
-        await db.flush()
+        # Full replace of this store's products. Use a single bulk DELETE +
+        # bulk INSERT pass instead of per-row deletes/flushes — full-replace on
+        # ~40 SKUs was hitting Vercel function-timeout previously.
+        from sqlalchemy import delete as _delete
+        await db.execute(_delete(MirrorProduct).where(MirrorProduct.store_id == store.id))
 
         # Group items by parent_item_id so we re-build the Product → SKU hierarchy.
         items = provider.get("items") or []
@@ -126,11 +123,20 @@ async def handle_on_search(
             parent = item.get("parent_item_id") or item.get("id")
             by_parent.setdefault(parent, []).append(item)
 
+        # Build all ORM objects in memory with pre-assigned UUIDs so we can
+        # bulk-add without intermediate flushes.
+        new_products: list[MirrorProduct] = []
+        new_skus: list[MirrorSKU] = []
+        new_prod_imgs: list[MirrorProductImage] = []
+        new_sku_imgs: list[MirrorSKUImage] = []
+
         for parent_id, group in by_parent.items():
             first = group[0]
             desc = first.get("descriptor") or {}
             name = desc.get("name") or parent_id
-            product = MirrorProduct(
+            prod_id = str(uuid.uuid4())
+            new_products.append(MirrorProduct(
+                id=prod_id,
                 store_id=store.id,
                 bpp_product_id=parent_id,
                 sku=parent_id,
@@ -138,24 +144,14 @@ async def handle_on_search(
                 description=desc.get("long_desc") or desc.get("short_desc"),
                 status="ACTIVE",
                 attributes=first.get("tags") or None,
-            )
-            db.add(product)
-            await db.flush()
-
-            # parent-level images (use the first item's images if any are present)
-            parent_imgs = []
-            d_imgs = desc.get("images") or []
-            for i, img in enumerate(d_imgs):
+            ))
+            for i, img in enumerate(desc.get("images") or []):
                 url = img if isinstance(img, str) else img.get("url")
                 if url:
-                    parent_imgs.append(
-                        MirrorProductImage(
-                            product_id=product.id, url=url,
-                            position=i, is_primary=(i == 0),
-                        )
-                    )
-            for pi in parent_imgs:
-                db.add(pi)
+                    new_prod_imgs.append(MirrorProductImage(
+                        id=str(uuid.uuid4()), product_id=prod_id,
+                        url=url, position=i, is_primary=(i == 0),
+                    ))
 
             for item in group:
                 idesc = item.get("descriptor") or {}
@@ -166,7 +162,6 @@ async def handle_on_search(
                 for tag in item.get("tags") or []:
                     if tag.get("code") == "variant":
                         for kv in tag.get("list") or []:
-                            # Beckn TagValue: code lives under descriptor.code
                             code = kv.get("code") or (kv.get("descriptor") or {}).get("code")
                             if code == "name":
                                 variant_name = kv.get("value")
@@ -185,29 +180,35 @@ async def handle_on_search(
                 except (TypeError, ValueError):
                     stock = 0
 
-                sku = MirrorSKU(
-                    product_id=product.id,
+                sku_id = str(uuid.uuid4())
+                new_skus.append(MirrorSKU(
+                    id=sku_id, product_id=prod_id,
                     bpp_sku_id=item.get("id") or "",
                     variant_name=variant_name,
                     variant_value=variant_value,
                     sku_code=idesc.get("code") or item.get("id") or "",
-                    price=price,
-                    original_price=original,
-                    stock=stock,
-                )
-                db.add(sku)
-                await db.flush()
-
-                # SKU-level images
+                    price=price, original_price=original, stock=stock,
+                ))
                 for i, img in enumerate(idesc.get("images") or []):
                     url = img if isinstance(img, str) else img.get("url")
                     if url:
-                        db.add(
-                            MirrorSKUImage(
-                                sku_id=sku.id, url=url,
-                                position=i, is_primary=(i == 0),
-                            )
-                        )
+                        new_sku_imgs.append(MirrorSKUImage(
+                            id=str(uuid.uuid4()), sku_id=sku_id, url=url,
+                            position=i, is_primary=(i == 0),
+                        ))
+
+        # Bulk add — one batch per kind. SQLAlchemy will issue one INSERT
+        # statement per kind (or batched multi-row INSERTs).
+        if new_products:
+            db.add_all(new_products)
+        if new_prod_imgs:
+            db.add_all(new_prod_imgs)
+        if new_skus:
+            db.add_all(new_skus)
+        if new_sku_imgs:
+            db.add_all(new_sku_imgs)
+        # Single flush per provider to surface FK errors early
+        await db.flush()
 
     return None  # default ACK
 
