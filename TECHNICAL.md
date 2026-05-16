@@ -44,6 +44,49 @@ network Identity Provider.**
 · Next.js 14 (storefronts + Vibe admin) · Vercel (serverless) · Firebase Auth
 (Google) · Ed25519 (pynacl) for Beckn signing.
 
+## Jaringan Dagang vs Beli Aman (two things, deliberately separate)
+
+These are **not the same product** and the codebase keeps them apart on purpose:
+
+- **Jaringan Dagang** is the *network* — neutral open-commerce rails built on
+  Beckn. Brand-agnostic infrastructure: the registry, the gateway, the
+  signed-message protocol, and the seller-side BPP/catalog/dashboard tooling.
+  Many participants can join; nothing there is consumer-facing.
+  ("Jaringan Dagang" ≈ "trade network".)
+- **Beli Aman** is a *participant brand* on that network — the consumer-facing
+  buyer app (a Beckn BAP), buyer-protection/escrow, the `*.beliaman.com`
+  storefronts and their Vibe editor, **and** the network Identity Provider.
+  **All of that is this repo.** ("Beli Aman" ≈ "buy safely".)
+
+Why it matters in the code:
+- The network repo never imports this app's identity/catalog/storefront code —
+  it stays a thin trust+discovery layer so other (non-Beli-Aman) BAPs/BPPs can
+  join later.
+- Beli Aman is just one BAP from Beckn's point of view; its role as Identity
+  Provider is an *additional hat*, not a protocol feature. Auth tokens, ACL,
+  and `profiles` live in this repo's `beli_aman` DB — never in the network,
+  never in the seller catalog DB.
+- The seller dashboard is Jaringan Dagang-branded (operator tooling); these
+  buyer storefronts are Beli Aman-branded (shopper-facing). One person uses
+  both via a single "Sign in with Beli Aman" identity — that federation, which
+  this repo *provides*, is the only thing that crosses the brand line, and it
+  crosses it intentionally.
+
+## Vibe — the no-code storefront editor (lives here)
+
+"Vibe" is the Beli Aman storefront builder, owned by this repo. Each toko gets
+a hosted storefront at `<slug>.beliaman.com`; its owner/staff customize it
+(theme, copy, layout, featured products) through the **Vibe admin** at
+`<slug>.beliaman.com/admin` (`sites/partner-demos`, `components/admin/AdminApp.tsx`).
+
+Vibe is **not** the seller dashboard. The seller dashboard (Jaringan Dagang)
+manages catalog / orders / refunds; Vibe (Beli Aman) manages how the storefront
+*looks*. Both gate on the **same** Beli Aman identity + `store_memberships`
+ACL — `AdminApp.tsx` calls this app's own IdP endpoint
+`/api/v1/me/can-admin?slug=` — so one invite grants both. The catalog a Vibe
+storefront renders is the buyer-side Beckn mirror (`mirror_*`, refreshed via
+`/on_search`); Vibe never writes catalog, it only themes presentation.
+
 ## Beckn Protocol
 
 Beckn is a **discovery + transaction** protocol — NOT a sync or ACL protocol.
