@@ -10,6 +10,7 @@ from .order_event import OrderEvent
 from .escrow_ledger import EscrowLedger, EscrowEntryType
 from .dispute import Dispute, DisputeStatus, DisputeReason
 from .storefront_event import StorefrontEvent
+from .beckn_logs import BecknInboundLog, BecknOutboundLog
 
 __all__ = [
     "Base",
@@ -26,4 +27,6 @@ __all__ = [
     "DisputeStatus",
     "DisputeReason",
     "StorefrontEvent",
+    "BecknInboundLog",
+    "BecknOutboundLog",
 ]
