@@ -21,7 +21,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import APIRouter, Depends, Header, HTTPException
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -112,7 +112,7 @@ async def my_stores(
 
 
 class InviteIn(BaseModel):
-    email: EmailStr
+    email: str
     role: StoreRole = StoreRole.STAFF
 
 
@@ -207,7 +207,7 @@ async def revoke_member(
 
 
 class SeedIn(BaseModel):
-    email: EmailStr
+    email: str
     store_id: str
     role: StoreRole = StoreRole.OWNER
 
