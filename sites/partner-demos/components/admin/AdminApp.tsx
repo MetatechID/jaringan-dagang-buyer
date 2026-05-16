@@ -129,7 +129,12 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState<null | "chat" | "apply" | "publish" | "revert">(null);
   const [err, setErr] = useState<string | null>(null);
-  const [draftBranch, setDraftBranch] = useState<string | null>(null);
+  // Initialize the draft from ?draft=BRANCH so refresh/share doesn't strip
+  // state. The URL-sync effect below will write back to the same URL.
+  const [draftBranch, setDraftBranch] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return new URLSearchParams(window.location.search).get("draft");
+  });
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewBuilding, setPreviewBuilding] = useState(false);
   const [commits, setCommits] = useState<CommitWithFunnel[]>([]);
@@ -212,13 +217,11 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
     pollPreview(branch);
   }, [pollPreview]);
 
-  // After sign-in, if the URL has ?draft=BRANCH, load that draft so refresh
-  // and share-links work.
+  // After sign-in, if a draft is already set (from ?draft=BRANCH on first
+  // load), kick off the preview poll so the iframe loads its build.
   useEffect(() => {
-    if (!signedIn || draftBranch) return;
-    if (typeof window === "undefined") return;
-    const d = new URLSearchParams(window.location.search).get("draft");
-    if (d) openDraft(d);
+    if (!signedIn || !draftBranch || previewUrl || previewBuilding) return;
+    pollPreview(draftBranch);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [signedIn]);
 
@@ -543,9 +546,36 @@ export function AdminApp({ brandSlug }: { brandSlug: string }) {
             🌐 Domain
           </button>
           {previewUrl ? (
-            <a href={previewUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: accent, textDecoration: "underline" }}>
-              Buka preview ↗
-            </a>
+            <>
+              <a
+                href={previewUrl}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: 999,
+                  background: "rgba(212,162,76,0.16)",
+                  border: `1px solid ${accent}`,
+                  color: accent,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  textDecoration: "none",
+                  letterSpacing: 0.2,
+                }}
+              >
+                ↗ Buka full pratinjau
+              </a>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(previewUrl);
+                  setMessages((curr) => [...curr, { role: "system", content: `🔗 Link pratinjau disalin — bisa langsung dishare ke tim marketing.`, ts: Date.now() }]);
+                }}
+                style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.16)", color: "rgba(255,255,255,0.85)", padding: "6px 12px", borderRadius: 999, fontSize: 11, cursor: "pointer", fontWeight: 600 }}
+                title={previewUrl}
+              >
+                🔗 Salin link
+              </button>
+            </>
           ) : null}
           {draftBranch ? (
             <button
