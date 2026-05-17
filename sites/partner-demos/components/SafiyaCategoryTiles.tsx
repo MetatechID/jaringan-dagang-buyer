@@ -12,11 +12,11 @@ interface Tile {
 }
 
 const TILES: Tile[] = [
-  { label: "Kurma",   icon: "🌴", href: "/safiyafood#kurma",  bg: "linear-gradient(135deg, #FBF6EC 0%, #F3E7CF 100%)" },
-  { label: "Sereal",  icon: "🥣", href: "/safiyafood#sereal", bg: "linear-gradient(135deg, #FBF6EC 0%, #E9D9B5 100%)" },
-  { label: "Pantry",  icon: "🌾", href: "/safiyafood#pantry", bg: "linear-gradient(135deg, #FBF6EC 0%, #F4E1C0 100%)" },
-  { label: "Madu",    icon: "🍯", href: "/safiyafood#madu",   bg: "linear-gradient(135deg, #FFF7E0 0%, #E9D9B5 100%)" },
-  { label: "Promo",   icon: "🌙", href: "/safiyafood/promo",  bg: "linear-gradient(135deg, #6B2C1A 0%, #2A1810 100%)" },
+  { label: "Kurma",           icon: "🌴", href: "/safiyafood#kurma",  bg: "linear-gradient(135deg, #FBF6EC 0%, #F3E7CF 100%)" },
+  { label: "Sereal",          icon: "🥣", href: "/safiyafood#sereal", bg: "linear-gradient(135deg, #FBF6EC 0%, #E9D9B5 100%)" },
+  { label: "Pantry",          icon: "🌾", href: "/safiyafood#pantry", bg: "linear-gradient(135deg, #FBF6EC 0%, #F4E1C0 100%)" },
+  { label: "Madu",            icon: "🍯", href: "/safiyafood#madu",   bg: "linear-gradient(135deg, #FFF7E0 0%, #E9D9B5 100%)" },
+  { label: "Promosi Hampers", icon: "🌙", href: "/safiyafood/promo",  bg: "linear-gradient(135deg, #6B2C1A 0%, #2A1810 100%)" },
 ];
 
 export function SafiyaCategoryTiles() {

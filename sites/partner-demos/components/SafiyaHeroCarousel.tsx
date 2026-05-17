@@ -31,7 +31,7 @@ const SLIDES: Slide[] = [
       </>
     ),
     subtitle: "Mulai Rp 165.000 · Hemat hingga 25%",
-    cta: { label: "Lihat Paket Hampers →", href: "/safiyafood/promo" },
+    cta: { label: "Promosi Hampers →", href: "/safiyafood/promo" },
     bg: "linear-gradient(135deg, #2A1810 0%, #5C2A18 55%, #7A4419 100%)",
     fg: "#FBF6EC",
     accent: "#D4A24C",
