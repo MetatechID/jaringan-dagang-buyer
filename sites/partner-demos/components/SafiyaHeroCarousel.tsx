@@ -23,7 +23,7 @@ const SLIDES: Slide[] = [
     eyebrow: "🌙 PROMO RAMADHAN 1447 H",
     title: (
       <>
-        Dimas ganteng,
+        Hampers Ramadhan,
         <br />
         <em style={{ fontStyle: "italic", fontWeight: 600 }}>
           tiga paket untuk berkah keluarga
