@@ -20,7 +20,8 @@ export async function GET(req: NextRequest) {
     // the token gets renewed).
     type Dep = { url: string; ready: boolean; state: string; inspector_url?: string };
     let dep: Dep | null = null;
-    const pr = await previewFromPrComment(branch);
+    const prDiag: Record<string, any> = {};
+    const pr = await previewFromPrComment(branch, "sites/partner-demos", prDiag);
     if (pr) dep = { url: pr.url, ready: pr.ready, state: pr.ready ? "READY" : "BUILDING" };
     if (!dep) {
       const v = await latestDeploymentForBranch(branch, sha);
@@ -48,6 +49,7 @@ export async function GET(req: NextRequest) {
         team_id: TEAM_ID || null,
         branch,
         sha,
+        pr_diag: prDiag,
       };
       if (TOKEN && PROJECT_ID) {
         const u = new URL("https://api.vercel.com/v6/deployments");

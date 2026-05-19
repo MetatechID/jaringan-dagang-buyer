@@ -314,51 +314,66 @@ export async function discardDraft(branch: string): Promise<void> {
 export async function previewFromPrComment(
   branch: string,
   rootDirectoryHint = "sites/partner-demos",
+  diag?: Record<string, any>,
 ): Promise<{ url: string; ready: boolean } | null> {
+  const d = diag ?? {};
+  d.repo = REPO;
+  d.branch = branch;
   try {
     const owner = REPO.split("/")[0];
-    const prs = await gh<any[]>(
-      `/repos/${REPO}/pulls?state=open&head=${encodeURIComponent(owner + ":" + branch)}`,
-    );
+    d.owner = owner;
+    d.pr_query = `/repos/${REPO}/pulls?state=open&head=${encodeURIComponent(owner + ":" + branch)}`;
+    const prs = await gh<any[]>(d.pr_query);
+    d.pr_count = prs?.length ?? 0;
     const pr = prs?.[0];
-    if (!pr) return null;
+    if (!pr) { d.reason = "no_open_pr"; return null; }
+    d.pr_number = pr.number;
     const comments = await gh<any[]>(
       `/repos/${REPO}/issues/${pr.number}/comments?per_page=100`,
     );
+    d.comment_count = comments?.length ?? 0;
+    d.comment_users = (comments ?? []).map((c: any) => c?.user?.login);
     // Walk newest → oldest looking for the Vercel bot's block.
     for (const c of [...comments].reverse()) {
       const body = c?.body ?? "";
       const m = body.match(/\[vc\]:\s*#[^:]+:([A-Za-z0-9+/=]+)/);
-      if (!m) continue;
+      if (!m) { d.match_misses = (d.match_misses ?? 0) + 1; continue; }
+      d.match_payload_len = m[1].length;
       try {
         const decoded = Buffer.from(m[1], "base64").toString("utf8");
+        d.decoded_len = decoded.length;
         // The base64 payload can be truncated mid-JSON; tolerate trailing garbage.
         const fixed = decoded.replace(/[ -]+/g, "") + "}}]}";
         const parsed = (() => {
-          try { return JSON.parse(decoded); } catch { /* fall through */ }
-          // Best-effort: find the first valid object substring.
+          try { return JSON.parse(decoded); } catch (e: any) { d.full_parse_err = e?.message; }
           const open = decoded.indexOf("{");
           for (let end = decoded.length; end > open; end--) {
             try { return JSON.parse(decoded.slice(open, end)); } catch { /* keep shrinking */ }
           }
           return null;
         })();
-        if (!parsed) continue;
+        if (!parsed) { d.reason = "json_parse_failed"; continue; }
         const projects = parsed.projects ?? [];
+        d.projects = projects.map((p: any) => ({ name: p.name, root: p.rootDirectory, status: p.nextCommitStatus }));
         const match = projects.find((p: any) =>
           (p.rootDirectory ?? "").toLowerCase() === rootDirectoryHint.toLowerCase()
           || p.name === "beli-aman-storefronts",
         ) ?? projects[0];
+        d.match_name = match?.name;
         if (match?.previewUrl) {
+          d.reason = "found";
           return {
             url: match.previewUrl,
             ready: match.nextCommitStatus === "DEPLOYED",
           };
         }
-      } catch {/* try next comment */}
+        d.reason = "no_previewUrl_on_match";
+      } catch (e: any) { d.decode_err = e?.message; }
     }
+    if (!d.reason) d.reason = "no_vc_block_in_any_comment";
     return null;
-  } catch {
+  } catch (e: any) {
+    d.outer_err = e?.message || String(e);
     return null;
   }
 }
