@@ -17,7 +17,11 @@ function ghHeaders(): Record<string, string> {
 }
 
 async function gh<T = any>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API}${path}`, { ...init, headers: { ...ghHeaders(), ...(init?.headers as any) } });
+  // Next.js App Router caches fetch() GETs by default. `dynamic = "force-dynamic"`
+  // on the route only opts out the route render, NOT internal fetch calls. We
+  // need always-fresh GitHub data — especially when polling for a PR comment
+  // that the Vercel bot hasn't posted yet — so explicit no-store is required.
+  const res = await fetch(`${API}${path}`, { cache: "no-store", ...init, headers: { ...ghHeaders(), ...(init?.headers as any) } });
   if (!res.ok) {
     const body = await res.text();
     throw new Error(`GitHub ${res.status} ${path}: ${body.slice(0, 200)}`);
